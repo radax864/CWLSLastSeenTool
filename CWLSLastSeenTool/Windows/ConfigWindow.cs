@@ -12,7 +12,7 @@ public class ConfigWindow : Window, IDisposable
     // We give this window a constant ID using ###
     // This allows for labels being dynamic, like "{FPS Counter}fps###XYZ counter window",
     // and the window ID will always be "###XYZ counter window" for ImGui
-    public ConfigWindow(Plugin plugin) : base("A Wonderful Configuration Window###With a constant ID")
+    public ConfigWindow(Plugin plugin) : base("CWLS Last Seen Tool Config/Debug") //("A Wonderful Configuration Window###With a constant ID")
     {
         Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse;
@@ -81,6 +81,22 @@ public class ConfigWindow : Window, IDisposable
         if (ImGui.Button("WRITE CWLSCSVMasterBackup"))
         {
             Configuration.CWLSCSVMasterBackup = Configuration.CWLSCSVMaster;
+            Configuration.Save();
+        }
+
+        ImGui.Text($"DEBUG STEPS: {Configuration.DEBUGString}");
+        ImGui.Text($"DEBUG Int0: {Configuration.DEBUGInt0}"); //member cached to table
+        ImGui.Text($"DEBUG Int1: {Configuration.DEBUGInt1}");
+        ImGui.Text($"DEBUG Int2: {Configuration.DEBUGInt2}");
+        ImGui.Text($"DEBUG Int3: {Configuration.DEBUGInt3}");
+
+        if (ImGui.Button("CLEAR DEBUG"))
+        {
+            Configuration.DEBUGString = "";
+            Configuration.DEBUGInt0 = 0;
+            Configuration.DEBUGInt1 = 0;
+            Configuration.DEBUGInt2 = 0;
+            Configuration.DEBUGInt3 = 0;
             Configuration.Save();
         }
     }

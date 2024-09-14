@@ -13,7 +13,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
 
-    private const string CommandName = "/cwlsls";
+    private const string CommandName = "/cwlslst";
 
     public Configuration Configuration { get; init; }
 

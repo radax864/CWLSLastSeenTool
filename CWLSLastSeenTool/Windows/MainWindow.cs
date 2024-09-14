@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Linq;
 using System.Numerics;
@@ -27,7 +28,7 @@ public class MainWindow : Window, IDisposable
     {
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(375, 330),
+            MinimumSize = new Vector2(580, 330),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
 
@@ -39,29 +40,7 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
-        if (ImGui.Button("Show Settings"))
-        {
-            Plugin.ToggleConfigUI();
-        }
-
-        ImGui.SameLine();
-
-        if (ImGui.Button("CLEAR DEBUG"))
-        {
-            Plugin.Configuration.DEBUGString = "";
-            Plugin.Configuration.DEBUGInt0 = 0;
-            Plugin.Configuration.DEBUGInt1 = 0;
-            Plugin.Configuration.DEBUGInt2 = 0;
-            Plugin.Configuration.DEBUGInt3 = 0;
-            Configuration.Save();
-        }
-
-        ImGui.Text($"DEBUG STEPS: {Plugin.Configuration.DEBUGString}");
-        ImGui.Text($"DEBUG Int0: {Plugin.Configuration.DEBUGInt0}"); //member cached to table
-        ImGui.Text($"DEBUG Int1: {Plugin.Configuration.DEBUGInt1}");
-        ImGui.Text($"DEBUG Int2: {Plugin.Configuration.DEBUGInt2}");
-        ImGui.Text($"DEBUG Int3: {Plugin.Configuration.DEBUGInt3}");
-
+        //main ui
         if (ImGui.Button("Cache CWLS Members")) 
         {
             //Fetch CWLS Data and Create Cache Table
@@ -78,7 +57,7 @@ public class MainWindow : Window, IDisposable
             {
                 if (InfoProxyCrossWorldLinkshellMember.Instance() != null)
                 {
-                    Plugin.Configuration.DEBUGString = "";
+                    //Plugin.Configuration.DEBUGString = "";
                     foreach (var characterData in InfoProxyCrossWorldLinkshellMember.Instance()->CharDataSpan)
                     {
                         DataRow row = cachetable.NewRow();
@@ -96,12 +75,8 @@ public class MainWindow : Window, IDisposable
                         }
 
                         cachetable.Rows.Add(row);
-                        Plugin.Configuration.DEBUGInt0++;
+                        //Plugin.Configuration.DEBUGInt0++;
                     }
-                }
-                else
-                {
-                    Plugin.Configuration.DEBUGString = "CWLS not loaded. Open CWLS first.";
                 }
             }
 
@@ -134,7 +109,7 @@ public class MainWindow : Window, IDisposable
                 DateTime cacheLastseen = cacheRow.Field<DateTime>("lastseen");
                 int cacheSeendays = cacheRow.Field<int>("seendays");
                 int foundMember = 0;
-                Plugin.Configuration.DEBUGInt1++;
+                //Plugin.Configuration.DEBUGInt1++;
 
                 foreach (DataRow masterRow in mastertable.Rows)
                 {
@@ -168,7 +143,7 @@ public class MainWindow : Window, IDisposable
                     Row["lastseen"] = cacheLastseen;
                     Row["seendays"] = cacheSeendays;
                     mastertable.Rows.Add(Row);
-                    Plugin.Configuration.DEBUGInt2++;
+                    //Plugin.Configuration.DEBUGInt2++;
                 }
             }
 
@@ -181,7 +156,7 @@ public class MainWindow : Window, IDisposable
             {
                 string[] fields = row.ItemArray.Select(field => field.ToString()).ToArray();
                 sb0.AppendLine(string.Join(",", fields));
-                Plugin.Configuration.DEBUGInt3++;
+                //Plugin.Configuration.DEBUGInt3++;
             }
 
             //Plugin.Configuration.CWLSCSVMasterBackup = Plugin.Configuration.CWLSCSVMaster;
@@ -190,41 +165,103 @@ public class MainWindow : Window, IDisposable
         }
 
         ImGui.SameLine();
-        ImGui.Text($"{Plugin.Configuration.DEBUGString}");
+
+        if (ImGui.Button("Show Settings"))
+        {
+            Plugin.ToggleConfigUI();
+        }
 
         ImGui.Spacing();
 
-        DataTable displaytable = new DataTable();
-        displaytable.Columns.Add("member", typeof(string));
-        displaytable.Columns.Add("state", typeof(string));
-        displaytable.Columns.Add("lastseen", typeof(string));
-        displaytable.Columns.Add("seendays", typeof(string));
+        string removeName = "";
 
         string[] Lines;
         Lines = Plugin.Configuration.CWLSCSVMaster.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
         string[] Fields;
 
+        Vector4 vectRed = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+        Vector4 vectGreen = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+
+        ImGuiTableFlags flags = ImGuiTableFlags.ScrollY | 
+                                ImGuiTableFlags.RowBg | 
+                                ImGuiTableFlags.Sortable
+                                ;
+
+        ImGui.BeginTable("displaytable", 5, flags);
+
+        ImGui.TableSetupScrollFreeze(0, 1);
+        ImGui.TableSetupColumn("Member", ImGuiTableColumnFlags.None, 0.38f);
+        ImGui.TableSetupColumn("State", ImGuiTableColumnFlags.None, 0.11f);
+        ImGui.TableSetupColumn("Last Seen", ImGuiTableColumnFlags.None, 0.18f);
+        ImGui.TableSetupColumn("Days Since", ImGuiTableColumnFlags.None, 0.18f);
+        ImGui.TableSetupColumn("Hold CTRL", ImGuiTableColumnFlags.NoSort, 0.15f);
+        ImGui.TableHeadersRow();
+
         for (int i = 1; i < Lines.GetLength(0); i++)
         {
             Fields = Lines[i].Split(new char[] { ',' });
-            DataRow Row = displaytable.NewRow();
-            Row["member"] = Fields[0];//.PadRight(32);
-            Row["state"] = Fields[1];//.PadRight(16);
-            Row["lastseen"] = Fields[2].Substring(0, 10);//.PadRight(16);
-            Row["seendays"] = Fields[3];
-            displaytable.Rows.Add(Row);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.Text($"{Fields[0]}"); //member
+            ImGui.TableNextColumn();
+            if (string.Equals(Fields[1], "Online")) { ImGui.TextColored(vectGreen, $"{Fields[1]}"); } //state
+            else { ImGui.TextColored(vectRed, $"{Fields[1]}"); }
+            ImGui.TableNextColumn();
+            ImGui.Text($"{Fields[2].Substring(0, 10)}"); //lastseen
+            ImGui.TableNextColumn();
+            if (string.Equals(Fields[3], "40000")) { ImGui.Text("Never Seen"); }
+            else { ImGui.Text($"{Fields[3]}"); } //seendays
+            ImGui.TableNextColumn();
+            if (ImGui.SmallButton($"Remove##{i}")) { removeName = Fields[0]; }
         }
 
-        foreach (DataRow row in displaytable.Rows)
+        ImGui.EndTable();
+
+        //remove member removeName from csv master
+        if (!removeName.Equals(""))
         {
-            //ImGui.Text($"{row.Field<string>("member")}\t{row.Field<string>("state")}\t{row.Field<string>("lastseen")}\t{row.Field<string>("seendays")}");
-            ImGui.Text($"{row.Field<string>("member")}");
-            ImGui.SameLine(200);
-            ImGui.Text($"{row.Field<string>("state")}");
-            ImGui.SameLine(300);
-            ImGui.Text($"{row.Field<string>("lastseen")}");
-            ImGui.SameLine(450);
-            ImGui.Text($"{row.Field<string>("seendays")}");
+            if (ImGui.GetIO().KeyCtrl) //check for ctrl held
+            {
+                DataTable remtable = new DataTable();
+                remtable.Columns.Add("member", typeof(string));
+                remtable.Columns.Add("state", typeof(string));
+                remtable.Columns.Add("lastseen", typeof(DateTime));
+                remtable.Columns.Add("seendays", typeof(int));
+
+                string[] remLines;
+                remLines = Plugin.Configuration.CWLSCSVMaster.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                string[] remFields;
+
+                for (int i = 1; i < remLines.GetLength(0); i++)
+                {
+                    remFields = remLines[i].Split(new char[] { ',' });
+                    if (!remFields[0].Equals(removeName))
+                    {
+                        DataRow Row = remtable.NewRow();
+                        Row["member"] = remFields[0];
+                        Row["state"] = remFields[1];
+                        Row["lastseen"] = remFields[2];
+                        Row["seendays"] = remFields[3];
+                        remtable.Rows.Add(Row);
+                    }
+                }
+
+                StringBuilder sb1 = new StringBuilder();
+                string[] columnNames0 = remtable.Columns.Cast<DataColumn>().Select(column => column.ColumnName).ToArray();
+                sb1.AppendLine(string.Join(",", columnNames0));
+
+                foreach (DataRow row in remtable.Rows)
+                {
+                    string[] fields = row.ItemArray.Select(field => field.ToString()).ToArray();
+                    sb1.AppendLine(string.Join(",", fields));
+                    //Plugin.Configuration.DEBUGInt3++;
+                }
+
+                Plugin.Configuration.CWLSCSVMaster = sb1.ToString();
+                Configuration.Save();
+
+            }
+            removeName = "";
         }
     }
 }

@@ -2,11 +2,11 @@
   "Author": "radax864",
   "Name": "CWLSLastSeenTool",
   "Punchline": "A tool for tracking when CWLS members were last seen online.",
-  "Description": "A tool for tracking when CWLS members were last seen online. /cwlsls to open the tool.",
+  "Description": "A tool for tracking when CWLS members were last seen online. /cwlslst to open the tool.",
   "ApplicableVersion": "any",
   "Tags": [
     "cwls",
-    "last",
-    "seen"
+    "cross-world linkshell",
+    "linkshell"
   ]
 }
