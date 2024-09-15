@@ -12,12 +12,12 @@ public class ConfigWindow : Window, IDisposable
     // We give this window a constant ID using ###
     // This allows for labels being dynamic, like "{FPS Counter}fps###XYZ counter window",
     // and the window ID will always be "###XYZ counter window" for ImGui
-    public ConfigWindow(Plugin plugin) : base("CWLS Last Seen Tool Config/Debug") //("A Wonderful Configuration Window###With a constant ID")
+    public ConfigWindow(Plugin plugin) : base("CWLS Last Seen Tool Config") //("A Wonderful Configuration Window###With a constant ID")
     {
         Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse;
 
-        Size = new Vector2(300, 400); //width x heght
+        Size = new Vector2(320, 200); //width x heght
         SizeCondition = ImGuiCond.Always;
 
         Configuration = plugin.Configuration;
@@ -28,76 +28,59 @@ public class ConfigWindow : Window, IDisposable
     public override void PreDraw()
     {
         // Flags must be added or removed before Draw() is being called, or they won't apply
-        if (Configuration.IsConfigWindowMovable)
-        {
-            Flags &= ~ImGuiWindowFlags.NoMove;
-        }
-        else
-        {
-            Flags |= ImGuiWindowFlags.NoMove;
-        }
     }
 
     public override void Draw()
     {
         // can't ref a property, so use a local copy
-        //var configValue = Configuration.SomePropertyToBeSavedAndWithADefault;
-        //if (ImGui.Checkbox("Random Config Bool", ref configValue))
-        //{
-        //    Configuration.SomePropertyToBeSavedAndWithADefault = configValue;
-        //    // can save immediately on change, if you don't want to provide a "Save and Close" button
-        //    Configuration.Save();
-        //}
 
-        if (ImGui.Button("RESTORE CWLSCSVMaster"))
+        ImGui.Text("Hold CTRL for CWLSCSVMaster Commands");
+
+        ImGui.Spacing();
+
+        if (ImGui.Button("CLEAR CWLSCSVMaster") && ImGui.GetIO().KeyCtrl)
         {
-            Configuration.CWLSCSVMaster = Configuration.CWLSCSVMasterBackup;
-            Configuration.Save();
-        }
-
-        //ImGui.SameLine();
-
-        //if (ImGui.Button("CLEAR CWLSCSVCache"))
-        //{
-        //    Configuration.CWLSCSVCache = "";
-        //    Configuration.Save();
-        //}
-
-        //ImGui.SameLine();
-
-        if (ImGui.Button("CLEAR CWLSCSVMaster"))
-        {
+            Configuration.CWLSCSVMasterDate = "CWLS CSV Cleared";
             Configuration.CWLSCSVMaster = "";
             Configuration.Save();
         }
 
-        var movable = Configuration.IsConfigWindowMovable;
-        if (ImGui.Checkbox("Movable Config Window", ref movable))
+        ImGui.Spacing();
+
+        if (ImGui.Button("RESTORE CWLSCSVMaster") && ImGui.GetIO().KeyCtrl)
         {
-            Configuration.IsConfigWindowMovable = movable;
+            Configuration.CWLSCSVMasterDate = "Backup Restored";//Configuration.CWLSCSVMasterBackupDate"";
+            Configuration.CWLSCSVMaster = Configuration.CWLSCSVMasterBackup;
             Configuration.Save();
         }
 
-        if (ImGui.Button("WRITE CWLSCSVMasterBackup"))
+        ImGui.Spacing();
+
+        if (ImGui.Button("WRITE CWLSCSVMasterBackup") && ImGui.GetIO().KeyCtrl)
         {
+            DateTime buDate = DateTime.Now;
+            Configuration.CWLSCSVMasterBackupDate = buDate.ToString();
             Configuration.CWLSCSVMasterBackup = Configuration.CWLSCSVMaster;
             Configuration.Save();
         }
+        ImGui.Text($"Last Backup: {Configuration.CWLSCSVMasterBackupDate}");
 
-        ImGui.Text($"DEBUG STEPS: {Configuration.DEBUGString}");
-        ImGui.Text($"DEBUG Int0: {Configuration.DEBUGInt0}"); //member cached to table
-        ImGui.Text($"DEBUG Int1: {Configuration.DEBUGInt1}");
-        ImGui.Text($"DEBUG Int2: {Configuration.DEBUGInt2}");
-        ImGui.Text($"DEBUG Int3: {Configuration.DEBUGInt3}");
+        //ImGui.Spacing();
 
-        if (ImGui.Button("CLEAR DEBUG"))
-        {
-            Configuration.DEBUGString = "";
-            Configuration.DEBUGInt0 = 0;
-            Configuration.DEBUGInt1 = 0;
-            Configuration.DEBUGInt2 = 0;
-            Configuration.DEBUGInt3 = 0;
-            Configuration.Save();
-        }
+        //ImGui.Text($"DEBUG STEPS: {Configuration.DEBUGString}");
+        //ImGui.Text($"DEBUG Int0: {Configuration.DEBUGInt0}"); //member cached to table
+        //ImGui.Text($"DEBUG Int1: {Configuration.DEBUGInt1}");
+        //ImGui.Text($"DEBUG Int2: {Configuration.DEBUGInt2}");
+        //ImGui.Text($"DEBUG Int3: {Configuration.DEBUGInt3}");
+
+        //if (ImGui.Button("CLEAR DEBUG"))
+        //{
+        //    Configuration.DEBUGString = "";
+        //    Configuration.DEBUGInt0 = 0;
+        //    Configuration.DEBUGInt1 = 0;
+        //    Configuration.DEBUGInt2 = 0;
+        //    Configuration.DEBUGInt3 = 0;
+        //    Configuration.Save();
+        //}
     }
 }

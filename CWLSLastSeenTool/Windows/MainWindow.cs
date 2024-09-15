@@ -45,7 +45,7 @@ public class MainWindow : Window, IDisposable
         {
             //Fetch CWLS Data and Create Cache Table
 
-            DateTime dateToday = DateTime.Today;
+            DateTime dateToday = DateTime.Now; //originally .Today
 
             DataTable cachetable = new DataTable();
             cachetable.Columns.Add("member", typeof(string));
@@ -161,6 +161,7 @@ public class MainWindow : Window, IDisposable
 
             //Plugin.Configuration.CWLSCSVMasterBackup = Plugin.Configuration.CWLSCSVMaster;
             Plugin.Configuration.CWLSCSVMaster = sb0.ToString();
+            Plugin.Configuration.CWLSCSVMasterDate = dateToday.ToString();
             Configuration.Save();
         }
 
@@ -170,6 +171,9 @@ public class MainWindow : Window, IDisposable
         {
             Plugin.ToggleConfigUI();
         }
+
+        ImGui.SameLine();
+        ImGui.Text($"Last Cache: {Configuration.CWLSCSVMasterDate}");
 
         ImGui.Spacing();
 
