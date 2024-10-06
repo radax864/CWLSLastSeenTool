@@ -17,7 +17,7 @@ public class ConfigWindow : Window, IDisposable
         Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse;
 
-        Size = new Vector2(320, 200); //width x heght
+        Size = new Vector2(420, 600); //width x heght default 320 200
         SizeCondition = ImGuiCond.Always;
 
         Configuration = plugin.Configuration;
@@ -65,13 +65,13 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.Text($"Last Backup: {Configuration.CWLSCSVMasterBackupDate}");
 
-        //ImGui.Spacing();
+        ImGui.Spacing();
 
-        //ImGui.Text($"DEBUG STEPS: {Configuration.DEBUGString}");
-        //ImGui.Text($"DEBUG Int0: {Configuration.DEBUGInt0}"); //member cached to table
-        //ImGui.Text($"DEBUG Int1: {Configuration.DEBUGInt1}");
-        //ImGui.Text($"DEBUG Int2: {Configuration.DEBUGInt2}");
-        //ImGui.Text($"DEBUG Int3: {Configuration.DEBUGInt3}");
+        ImGui.Text($"DEBUG STEPS: {Configuration.DEBUGString}");
+        ImGui.Text($"DEBUG Int0: {Configuration.DEBUGInt0}"); //member cached to table
+        ImGui.Text($"DEBUG Int1: {Configuration.DEBUGInt1}");
+        ImGui.Text($"DEBUG Int2: {Configuration.DEBUGInt2}");
+        ImGui.Text($"DEBUG Int3: {Configuration.DEBUGInt3}");
 
         //if (ImGui.Button("CLEAR DEBUG"))
         //{

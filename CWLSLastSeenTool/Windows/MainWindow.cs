@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.Design;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -195,11 +196,58 @@ public class MainWindow : Window, IDisposable
 
         ImGui.TableSetupScrollFreeze(0, 1);
         ImGui.TableSetupColumn("Member", ImGuiTableColumnFlags.None, 0.38f);
-        ImGui.TableSetupColumn("State", ImGuiTableColumnFlags.None, 0.11f);
+        ImGui.TableSetupColumn("State", ImGuiTableColumnFlags.DefaultSort | ImGuiTableColumnFlags.PreferSortDescending, 0.11f);
         ImGui.TableSetupColumn("Last Seen", ImGuiTableColumnFlags.None, 0.18f);
         ImGui.TableSetupColumn("Days Since", ImGuiTableColumnFlags.None, 0.18f);
         ImGui.TableSetupColumn("Hold CTRL", ImGuiTableColumnFlags.NoSort, 0.15f);
         ImGui.TableHeadersRow();
+
+        ImGuiTableSortSpecsPtr sortSpecs = ImGui.TableGetSortSpecs();
+
+        Array.Sort(Lines, (line1, line2) =>
+        {
+            // Don't sort Lines[0] - it's the table headers
+            if (line1 == Lines[0]) return -1;
+            if (line2 == Lines[0]) return 1;
+
+            string[] fields1 = line1.Split(new char[] { ',' });
+            string[] fields2 = line2.Split(new char[] { ',' });
+
+            short index = sortSpecs.Specs.ColumnIndex; // this is the column that we're sorting by
+            int comparison = 0;
+            
+            switch (index)
+            {
+                case 0: // Names
+                case 1: // Online/Offline
+                    comparison = string.Compare(fields1[index], fields2[index]);
+                    break;
+                case 2: // Last Seen Date
+                    var time1 = DateTime.Parse(fields1[index]);
+                    var time2 = DateTime.Parse(fields2[index]);
+
+                    comparison = time1.CompareTo(time2);
+                    break;
+                case 3: // days since seen
+                    comparison = int.Parse(fields1[index]) - int.Parse(fields2[index]);
+                    break;
+            }
+             
+            if (comparison == 0 && index != 0)
+            {
+                // If the lines have the same value in this column, sort by name as a second layer.
+                // Always sort ascending for the secondary name sort
+                return string.Compare(fields1[0], fields2[0]);
+            }
+
+            if (comparison != 0)
+            {
+                // Check sort direction here and return the inverse if descending
+                return sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending ? - comparison : comparison;
+            }
+            return 0;
+
+        });
 
         for (int i = 1; i < Lines.GetLength(0); i++)
         {
