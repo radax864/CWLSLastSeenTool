@@ -9,6 +9,8 @@ public class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
 
+    public bool UseWorldNames { get; set; } = true;
+
     public string DEBUGString { get; set; } = "";
     public int DEBUGInt0 { get; set; } = 0;
     public int DEBUGInt1 { get; set; } = 0;

@@ -39,6 +39,130 @@ public class MainWindow : Window, IDisposable
 
     public void Dispose() { }
 
+    private static string GetWorldName(string rawname)
+    {
+        string[] splitname;
+        splitname = rawname.Split(new char[] { ' ' });
+        string newname = splitname[0] + " " + splitname[1];
+        int worldid = int.Parse(splitname[2]);
+        string worldname = "World ID " + splitname[2] + " Not Found";
+
+        //aether dc
+        if (worldid == 73) { worldname = "Adamantoise"; }
+        if (worldid == 79) { worldname = "Cactuar"; }
+        if (worldid == 54) { worldname = "Faerie"; }
+        if (worldid == 63) { worldname = "Gilgamesh"; }
+        if (worldid == 40) { worldname = "Jenova"; }
+        if (worldid == 65) { worldname = "Midgardsormr"; }
+        if (worldid == 99) { worldname = "Sargatanas"; }
+        if (worldid == 57) { worldname = "Siren"; }
+
+        //crystal dc
+        if (worldid == 91) { worldname = "Balmung"; }
+        if (worldid == 34) { worldname = "Brynhildr"; }
+        if (worldid == 74) { worldname = "Coeurl"; }
+        if (worldid == 62) { worldname = "Diabolos"; }
+        if (worldid == 81) { worldname = "Goblin"; }
+        if (worldid == 75) { worldname = "Malboro"; }
+        if (worldid == 37) { worldname = "Mateus"; }
+        if (worldid == 41) { worldname = "Zalera"; }
+
+        //primal dc
+        if (worldid == 78) { worldname = "Behemoth"; }
+        if (worldid == 93) { worldname = "Excalibur"; }
+        if (worldid == 53) { worldname = "Exodus"; }
+        if (worldid == 35) { worldname = "Famfrit"; }
+        if (worldid == 95) { worldname = "Hyperion"; }
+        if (worldid == 55) { worldname = "Lamia"; }
+        if (worldid == 64) { worldname = "Leviathan"; }
+        if (worldid == 77) { worldname = "Ultros"; }
+
+        //dynamis dc
+        if (worldid == 406) { worldname = "Halicarnassus"; }
+        if (worldid == 407) { worldname = "Maduin"; }
+        if (worldid == 404) { worldname = "Marilith"; }
+        if (worldid == 405) { worldname = "Seraph"; }
+        if (worldid == 408) { worldname = "Cuchulainn"; }
+        if (worldid == 411) { worldname = "Golem"; }
+        if (worldid == 409) { worldname = "Kraken"; }
+        if (worldid == 410) { worldname = "Rafflesia"; }
+
+        //chaos dc
+        if (worldid == 80) { worldname = "Cerberus"; }
+        if (worldid == 83) { worldname = "Louisoix"; }
+        if (worldid == 71) { worldname = "Moogle"; }
+        if (worldid == 39) { worldname = "Omega"; }
+        if (worldid == 401) { worldname = "Phantom"; }
+        if (worldid == 97) { worldname = "Ragnarok"; }
+        if (worldid == 400) { worldname = "Sagittarius"; }
+        if (worldid == 85) { worldname = "Spriggan"; }
+
+        //light dc
+        if (worldid == 402) { worldname = "Alpha"; }
+        if (worldid == 36) { worldname = "Lich"; }
+        if (worldid == 66) { worldname = "Odin"; }
+        if (worldid == 56) { worldname = "Phoenix"; }
+        if (worldid == 403) { worldname = "Raiden"; }
+        if (worldid == 67) { worldname = "Shiva"; }
+        if (worldid == 33) { worldname = "Twintania"; }
+        if (worldid == 42) { worldname = "Zodiark"; }
+
+        //elemental dc
+        if (worldid == 90) { worldname = "Aegis"; }
+        if (worldid == 68) { worldname = "Atomos"; }
+        if (worldid == 45) { worldname = "Carbuncle"; }
+        if (worldid == 58) { worldname = "Garuda"; }
+        if (worldid == 94) { worldname = "Gungnir"; }
+        if (worldid == 49) { worldname = "Kujata"; }
+        if (worldid == 72) { worldname = "Tonberry"; }
+        if (worldid == 50) { worldname = "Typhon"; }
+
+        //gaia dc
+        if (worldid == 43) { worldname = "Alexander"; }
+        if (worldid == 69) { worldname = "Bahamut"; }
+        if (worldid == 92) { worldname = "Durandal"; }
+        if (worldid == 46) { worldname = "Fenrir"; }
+        if (worldid == 59) { worldname = "Ifrit"; }
+        if (worldid == 98) { worldname = "Ridill"; }
+        if (worldid == 76) { worldname = "Tiamat"; }
+        if (worldid == 51) { worldname = "Ultima"; }
+
+        //mana dc
+        if (worldid == 44) { worldname = "Anima"; }
+        if (worldid == 23) { worldname = "Asura"; }
+        if (worldid == 70) { worldname = "Chocobo"; }
+        if (worldid == 47) { worldname = "Hades"; }
+        if (worldid == 48) { worldname = "Ixion"; }
+        if (worldid == 96) { worldname = "Masamune"; }
+        if (worldid == 28) { worldname = "Pandaemonium"; }
+        if (worldid == 61) { worldname = "Titan"; }
+
+        //meteor dc
+        if (worldid == 24) { worldname = "Belias"; }
+        if (worldid == 82) { worldname = "Mandragora"; }
+        if (worldid == 60) { worldname = "Ramuh"; }
+        if (worldid == 29) { worldname = "Shinryu"; }
+        if (worldid == 30) { worldname = "Unicorn"; }
+        if (worldid == 52) { worldname = "Valefor"; }
+        if (worldid == 31) { worldname = "Yojimbo"; }
+        if (worldid == 32) { worldname = "Zeromus"; }
+
+        //materia dc
+        if (worldid == 22) { worldname = "Bismarck"; }
+        if (worldid == 21) { worldname = "Ravana"; }
+        if (worldid == 86) { worldname = "Sephirot"; }
+        if (worldid == 87) { worldname = "Sophia"; }
+        if (worldid == 88) { worldname = "Zurvan"; }
+        //if (worldid == 0) { worldname = "shard"; }
+        //if (worldid == 0) { worldname = "shard"; }
+        //if (worldid == 0) { worldname = "shard"; }
+
+        newname += " (" + worldname + ")";
+
+        return newname;
+
+    }
+
     public override void Draw()
     {
         //main ui
@@ -254,7 +378,8 @@ public class MainWindow : Window, IDisposable
             Fields = Lines[i].Split(new char[] { ',' });
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
-            ImGui.Text($"{Fields[0]}"); //member
+            if (Configuration.UseWorldNames == true) { ImGui.Text($"{GetWorldName(Fields[0])}"); } //member
+            else { ImGui.Text($"{Fields[0]}"); }
             ImGui.TableNextColumn();
             if (string.Equals(Fields[1], "Online")) { ImGui.TextColored(vectGreen, $"{Fields[1]}"); } //state
             else { ImGui.TextColored(vectRed, $"{Fields[1]}"); }
