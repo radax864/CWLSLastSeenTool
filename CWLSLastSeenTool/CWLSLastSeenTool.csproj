@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Version>1.0.0.1</Version>
     <Description>A tool for tracking when CWLS members were last seen online.</Description>
-    <PackageProjectUrl></PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/radax864/CWLSLastSeenTool</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
