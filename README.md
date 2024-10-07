@@ -24,3 +24,5 @@ Individual members can be removed from this list by holding ctrl and clicking `R
 Within the plugin settings you can backup your list CSV to a separate string in the plugin json, restore this backup, or clear your whole list.
 
 There is also an option to display World Names in the list as World IDs instead.
+
+![Image](readmedemo.png)
