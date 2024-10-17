@@ -12,12 +12,12 @@ public class ConfigWindow : Window, IDisposable
     // We give this window a constant ID using ###
     // This allows for labels being dynamic, like "{FPS Counter}fps###XYZ counter window",
     // and the window ID will always be "###XYZ counter window" for ImGui
-    public ConfigWindow(Plugin plugin) : base("CWLS Last Seen Tool Config") //("A Wonderful Configuration Window###With a constant ID")
+    public ConfigWindow(Plugin plugin) : base("CWLS Last Seen Tool Settings") //("A Wonderful Configuration Window###With a constant ID")
     {
         Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse;
 
-        Size = new Vector2(340, 220); //width x heght default 320 200
+        Size = new Vector2(440, 320); //width x heght default 340 220
         SizeCondition = ImGuiCond.Always;
 
         Configuration = plugin.Configuration;
@@ -45,32 +45,70 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.Spacing();
 
-        if (ImGui.Button("CLEAR CWLSCSVMaster") && ImGui.GetIO().KeyCtrl)
+        if (ImGui.Button("CLEAR CWLSCSVDATA") && ImGui.GetIO().KeyCtrl)
         {
-            Configuration.CWLSCSVMasterDate = "CWLS CSV Cleared";
-            Configuration.CWLSCSVMaster = "";
+            Configuration.CWLSCSVData = "";
+            Configuration.CWLSCSVList = "";
+            Configuration.CWLSCSVListDate = "";
             Configuration.Save();
         }
 
         ImGui.Spacing();
 
-        if (ImGui.Button("RESTORE CWLSCSVMaster") && ImGui.GetIO().KeyCtrl)
+        if (ImGui.Button("RESTORE CWLSCSVDATA") && ImGui.GetIO().KeyCtrl)
         {
-            Configuration.CWLSCSVMasterDate = "Backup Restored";//Configuration.CWLSCSVMasterBackupDate"";
-            Configuration.CWLSCSVMaster = Configuration.CWLSCSVMasterBackup;
+            Configuration.CWLSCSVData = Configuration.CWLSCSVDataBACKUP;
+            Configuration.CWLSCSVList = Configuration.CWLSCSVListBACKUP;
+            Configuration.CWLSCSVListDate = Configuration.CWLSCSVListDateBACKUP;
             Configuration.Save();
         }
 
         ImGui.Spacing();
 
-        if (ImGui.Button("WRITE CWLSCSVMasterBackup") && ImGui.GetIO().KeyCtrl)
+        if (ImGui.Button("BACKUP CWLSCSVDATA") && ImGui.GetIO().KeyCtrl)
         {
-            DateTime buDate = DateTime.Now;
-            Configuration.CWLSCSVMasterBackupDate = buDate.ToString();
-            Configuration.CWLSCSVMasterBackup = Configuration.CWLSCSVMaster;
+            Configuration.CWLSCSVDataBACKUP = Configuration.CWLSCSVData;
+            Configuration.CWLSCSVListBACKUP = Configuration.CWLSCSVList;
+            Configuration.CWLSCSVListDateBACKUP = Configuration.CWLSCSVListDate;
             Configuration.Save();
         }
-        ImGui.Text($"Last Backup: {Configuration.CWLSCSVMasterBackupDate}");
+
+        ImGui.Spacing();
+
+        //ImGui.Text($"LIST: {Configuration.CWLSCSVList}");
+        //ImGui.Text($"DATE: {Configuration.CWLSCSVListDate}");
+        //ImGui.Text($"LIST INDEX: {Configuration.CWLSListIndex}");
+        ImGui.Text($"Backed Up CWLS: {Configuration.CWLSCSVListBACKUP}");
+        ImGui.Text($"CWLS Dates: {Configuration.CWLSCSVListDateBACKUP}");
+
+        ImGui.Spacing();
+
+        //if (ImGui.Button("CLEAR CWLSCSVMaster") && ImGui.GetIO().KeyCtrl)
+        //{
+        //    Configuration.CWLSCSVMasterDate = "CWLS CSV Cleared";
+        //    Configuration.CWLSCSVMaster = "";
+        //    Configuration.Save();
+        //}
+
+        //ImGui.Spacing();
+
+        //if (ImGui.Button("RESTORE CWLSCSVMaster") && ImGui.GetIO().KeyCtrl)
+        //{
+        //    Configuration.CWLSCSVMasterDate = "Backup Restored";//Configuration.CWLSCSVMasterBackupDate"";
+        //    Configuration.CWLSCSVMaster = Configuration.CWLSCSVMasterBackup;
+        //    Configuration.Save();
+        //}
+
+        //ImGui.Spacing();
+
+        //if (ImGui.Button("WRITE CWLSCSVMasterBackup") && ImGui.GetIO().KeyCtrl)
+        //{
+        //    DateTime buDate = DateTime.Now;
+        //    Configuration.CWLSCSVMasterBackupDate = buDate.ToString();
+        //    Configuration.CWLSCSVMasterBackup = Configuration.CWLSCSVMaster;
+        //    Configuration.Save();
+        //}
+        //ImGui.Text($"Last Backup: {Configuration.CWLSCSVMasterBackupDate}");
 
         //ImGui.Spacing();
 
