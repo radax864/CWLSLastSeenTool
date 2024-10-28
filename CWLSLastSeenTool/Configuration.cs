@@ -22,12 +22,13 @@ public class Configuration : IPluginConfiguration
     public string CWLSCSVListDate { get; set; } = ""; //list of cache dates corresponding to CWLSCSVList
     public int CWLSListIndex { get; set; } = 0; //used for drop down cwls list memory
     public int CWLSMemberCount { get; set; } = 0; //used for showing current member count for actively showing list
+    public int CWLSOnlineCount { get; set; } = 0; //used for showing current online member count for actively showing list
     public string CWLSCSVDataBACKUP { get; set; } = ""; //mostly for testing, will implement proper backup system later
     public string CWLSCSVListBACKUP { get; set; } = ""; //mostly for testing, will implement proper backup system later
     public string CWLSCSVListDateBACKUP { get; set; } = ""; //mostly for testing, will implement proper backup system later
 
 
-
+    
 
     // values below this can probably be removed in 1.1.0.0
 

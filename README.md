@@ -6,7 +6,7 @@ A tool to make keeping track of when CWLS members last logged in easier.
 
 Pretty much what it says on the can. This is a tool I made to make keeping track of CWLS members easier as space is limited and so is my memory for names. The default game UI for Cross-world Linkshells provides no information for when someone was last online. So instead of manually keeping track of it in a spreadsheet I wanted a tool to quickly mark it all down.
 
-The plugin does not differentiate between multiple Cross-world Linkshells and will add all members seen to the same internal list. This plugin requires manually opening the CWLS UI and waiting for the member list to load before caching the names into the plugin.
+This plugin requires manually opening the CWLS UI and waiting for the member list to load before caching the names into the plugin.
 
 ## How To
 
@@ -25,4 +25,4 @@ Within the plugin settings you can backup your list CSV to a separate string in 
 
 There is also an option to display World Names in the list as World IDs instead.
 
-![Image](readmedemo.png)
+![Image](readme.png)
