@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -347,7 +348,7 @@ public class MainWindow : Window, IDisposable
             //make list of cwls names for drop down
             string[] CWLSList;
             CWLSList = Plugin.Configuration.CWLSCSVList.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            
+
             //check if list index is out of array, if it is return to 0 before drawing list
             if (Plugin.Configuration.CWLSListIndex != 0 && Plugin.Configuration.CWLSListIndex >= CWLSList.Length)
             {
@@ -360,22 +361,27 @@ public class MainWindow : Window, IDisposable
             CWLSListDate = Plugin.Configuration.CWLSCSVListDate.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             ImGui.SetNextItemWidth(300.0f);
-            if (ImGui.BeginCombo("", CWLSList[Plugin.Configuration.CWLSListIndex]))
+            //if (ImGui.BeginCombo("", CWLSList[Plugin.Configuration.CWLSListIndex]))
+            using (var cwlspicklist = ImRaii.Combo("", CWLSList[Plugin.Configuration.CWLSListIndex]))
             {
-                for (int i = 0; i < CWLSList.Length; i++)
+                if (cwlspicklist)
                 {
-                    bool isselected = (Plugin.Configuration.CWLSListIndex == i);
-                    if (ImGui.Selectable(CWLSList[i], isselected))
+                    for (int i = 0; i < CWLSList.Length; i++)
                     {
-                        Plugin.Configuration.CWLSListIndex = i;
-                        Configuration.Save();
+                        bool isselected = (Plugin.Configuration.CWLSListIndex == i);
+                        if (ImGui.Selectable(CWLSList[i], isselected))
+                        {
+                            Plugin.Configuration.CWLSListIndex = i;
+                            Configuration.Save();
+                        }
+                        if (isselected)
+                        {
+                            ImGui.SetItemDefaultFocus();
+                        }
                     }
-                    if (isselected)
-                    {
-                        ImGui.SetItemDefaultFocus();
-                    }
+                    //ImGui.EndCombo();
                 }
-                ImGui.EndCombo();
+
             }
 
             //ImGui.SameLine();
@@ -402,90 +408,95 @@ public class MainWindow : Window, IDisposable
                                     ImGuiTableFlags.Sortable
                                     ;
 
-            ImGui.BeginTable("displaytable", 5, flags);
-
-            ImGui.TableSetupScrollFreeze(0, 1);
-            ImGui.TableSetupColumn("Member", ImGuiTableColumnFlags.None, 0.38f);
-            ImGui.TableSetupColumn("State", ImGuiTableColumnFlags.DefaultSort | ImGuiTableColumnFlags.PreferSortDescending, 0.12f);
-            ImGui.TableSetupColumn("Last Seen", ImGuiTableColumnFlags.None, 0.18f);
-            ImGui.TableSetupColumn("Days Since", ImGuiTableColumnFlags.None, 0.17f);
-            ImGui.TableSetupColumn("Hold CTRL", ImGuiTableColumnFlags.NoSort, 0.15f);
-            ImGui.TableHeadersRow();
-
-            ImGuiTableSortSpecsPtr sortSpecs = ImGui.TableGetSortSpecs();
-
-            Array.Sort(Lines, (line1, line2) =>
+            //ImGui.BeginTable("displaytable", 5, flags);
+            using (var displaytable = ImRaii.Table("displaytable", 5, flags)) 
             {
-                // Don't sort Lines[0] - it's the table headers
-                if (line1 == Lines[0]) return -1;
-                if (line2 == Lines[0]) return 1;
-
-                string[] fields1 = line1.Split(new char[] { ',' });
-                string[] fields2 = line2.Split(new char[] { ',' });
-
-                short index = sortSpecs.Specs.ColumnIndex; // this is the column that we're sorting by
-                int comparison = 0;
-
-                switch (index)
+                if (displaytable)
                 {
-                    case 0: // Names
-                    case 1: // Online/Offline
-                        comparison = string.Compare(fields1[index], fields2[index]);
-                        break;
-                    case 2: // Last Seen Date
-                        var time1 = DateTime.Parse(fields1[index]);
-                        var time2 = DateTime.Parse(fields2[index]);
+                    ImGui.TableSetupScrollFreeze(0, 1);
+                    ImGui.TableSetupColumn("Member", ImGuiTableColumnFlags.None, 0.38f);
+                    ImGui.TableSetupColumn("State", ImGuiTableColumnFlags.DefaultSort | ImGuiTableColumnFlags.PreferSortDescending, 0.12f);
+                    ImGui.TableSetupColumn("Last Seen", ImGuiTableColumnFlags.None, 0.18f);
+                    ImGui.TableSetupColumn("Days Since", ImGuiTableColumnFlags.None, 0.17f);
+                    ImGui.TableSetupColumn("Hold CTRL", ImGuiTableColumnFlags.NoSort, 0.15f);
+                    ImGui.TableHeadersRow();
 
-                        comparison = time1.CompareTo(time2);
-                        break;
-                    case 3: // days since seen
-                        comparison = int.Parse(fields1[index]) - int.Parse(fields2[index]);
-                        break;
-                }
+                    ImGuiTableSortSpecsPtr sortSpecs = ImGui.TableGetSortSpecs();
 
-                if (comparison == 0 && index != 0)
-                {
-                    // If the lines have the same value in this column, sort by name as a second layer.
-                    // Always sort ascending for the secondary name sort
-                    return string.Compare(fields1[0], fields2[0]);
-                }
+                    Array.Sort(Lines, (line1, line2) =>
+                    {
+                        // Don't sort Lines[0] - it's the table headers
+                        if (line1 == Lines[0]) return -1;
+                        if (line2 == Lines[0]) return 1;
 
-                if (comparison != 0)
-                {
-                    // Check sort direction here and return the inverse if descending
-                    return sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending ? -comparison : comparison;
-                }
-                return 0;
+                        string[] fields1 = line1.Split(new char[] { ',' });
+                        string[] fields2 = line2.Split(new char[] { ',' });
 
-            });
+                        short index = sortSpecs.Specs.ColumnIndex; // this is the column that we're sorting by
+                        int comparison = 0;
 
-            Plugin.Configuration.CWLSMemberCount = 0;
-            Plugin.Configuration.CWLSOnlineCount = 0;
+                        switch (index)
+                        {
+                            case 0: // Names
+                            case 1: // Online/Offline
+                                comparison = string.Compare(fields1[index], fields2[index]);
+                                break;
+                            case 2: // Last Seen Date
+                                var time1 = DateTime.Parse(fields1[index]);
+                                var time2 = DateTime.Parse(fields2[index]);
 
-            for (int i = 1; i < Lines.GetLength(0); i++)
-            {
-                Fields = Lines[i].Split(new char[] { ',' });
+                                comparison = time1.CompareTo(time2);
+                                break;
+                            case 3: // days since seen
+                                comparison = int.Parse(fields1[index]) - int.Parse(fields2[index]);
+                                break;
+                        }
 
-                if (Fields[4].Equals(CWLSList[Plugin.Configuration.CWLSListIndex]))
-                {
-                    ImGui.TableNextRow();
-                    ImGui.TableNextColumn();
-                    if (int.Parse(Fields[6]) == 1) { ImGui.Text($"{GetWorldName(Fields[0])}"); Plugin.Configuration.CWLSMemberCount++; } //member
-                    else { ImGui.TextColored(vectRed, $"{GetWorldName(Fields[0])}"); }
-                    ImGui.TableNextColumn();
-                    if (string.Equals(Fields[1], "Online")) { ImGui.TextColored(vectGreen, $"{Fields[1]}"); Plugin.Configuration.CWLSOnlineCount++; } //state
-                    else { ImGui.TextColored(vectRed, $"{Fields[1]}"); }
-                    ImGui.TableNextColumn();
-                    ImGui.Text($"{Fields[2].Substring(0, 10)}"); //lastseen
-                    ImGui.TableNextColumn();
-                    if (int.Parse(Fields[3]) == 40000) { ImGui.Text("Never Seen"); }
-                    else { ImGui.Text($"{Fields[3]}"); } //seendays
-                    ImGui.TableNextColumn();
-                    if (ImGui.SmallButton($"Remove##{i}") && ImGui.GetIO().KeyCtrl) { RemoveCWLSMember(Fields[4], Fields[0]); }
+                        if (comparison == 0 && index != 0)
+                        {
+                            // If the lines have the same value in this column, sort by name as a second layer.
+                            // Always sort ascending for the secondary name sort
+                            return string.Compare(fields1[0], fields2[0]);
+                        }
+
+                        if (comparison != 0)
+                        {
+                            // Check sort direction here and return the inverse if descending
+                            return sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending ? -comparison : comparison;
+                        }
+                        return 0;
+
+                    });
+
+                    Plugin.Configuration.CWLSMemberCount = 0;
+                    Plugin.Configuration.CWLSOnlineCount = 0;
+
+                    for (int i = 1; i < Lines.GetLength(0); i++)
+                    {
+                        Fields = Lines[i].Split(new char[] { ',' });
+
+                        if (Fields[4].Equals(CWLSList[Plugin.Configuration.CWLSListIndex]))
+                        {
+                            ImGui.TableNextRow();
+                            ImGui.TableNextColumn();
+                            if (int.Parse(Fields[6]) == 1) { ImGui.Text($"{GetWorldName(Fields[0])}"); Plugin.Configuration.CWLSMemberCount++; } //member
+                            else { ImGui.TextColored(vectRed, $"{GetWorldName(Fields[0])}"); }
+                            ImGui.TableNextColumn();
+                            if (string.Equals(Fields[1], "Online")) { ImGui.TextColored(vectGreen, $"{Fields[1]}"); Plugin.Configuration.CWLSOnlineCount++; } //state
+                            else { ImGui.TextColored(vectRed, $"{Fields[1]}"); }
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{Fields[2].Substring(0, 10)}"); //lastseen
+                            ImGui.TableNextColumn();
+                            if (int.Parse(Fields[3]) == 40000) { ImGui.Text("Never Seen"); }
+                            else { ImGui.Text($"{Fields[3]}"); } //seendays
+                            ImGui.TableNextColumn();
+                            if (ImGui.SmallButton($"Remove##{i}") && ImGui.GetIO().KeyCtrl) { RemoveCWLSMember(Fields[4], Fields[0]); }
+                        }
+                    }
+
                 }
             }
-
-            ImGui.EndTable();
+            //ImGui.EndTable();
         }
 
         else
