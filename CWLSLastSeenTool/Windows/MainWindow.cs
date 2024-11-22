@@ -17,8 +17,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using ImGuiNET;
 using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
-//using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using static System.Net.Mime.MediaTypeNames;
 using static FFXIVClientStructs.FFXIV.Client.UI.Info.InfoProxyCrossWorldLinkshell.Delegates;
 
@@ -59,8 +58,8 @@ public class MainWindow : Window, IDisposable
             
             uint worldid = uint.Parse(splitname[2]);
             string worldname = "World ID " + splitname[2] + " Not Found";
-            
-            if (Plugin.DataManager.GetExcelSheet<World>().GetRow(worldid) != null)
+
+            if (Plugin.DataManager.GetExcelSheet<World>().HasRow(worldid))
             {
                 worldname = Plugin.DataManager.GetExcelSheet<World>().GetRow(worldid).Name.ToString();
             }

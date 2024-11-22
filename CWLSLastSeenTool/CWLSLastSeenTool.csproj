@@ -3,7 +3,7 @@
   <Import Project="Dalamud.Plugin.Bootstrap.targets"/>
 
   <PropertyGroup>
-    <Version>1.1.2.0</Version>
+    <Version>1.1.2.1</Version>
     <Description>A tool for tracking when CWLS members were last seen online.</Description>
     <PackageProjectUrl>https://github.com/radax864/CWLSLastSeenTool</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
