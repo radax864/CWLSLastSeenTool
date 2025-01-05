@@ -329,7 +329,7 @@ public class MainWindow : Window, IDisposable
 
         ImGui.SameLine();
 
-        if (ImGui.Button("Settings"))
+        if (ImGui.Button("Advanced Options"))
         {
             Plugin.ToggleConfigUI();
         }
