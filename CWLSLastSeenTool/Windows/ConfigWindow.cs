@@ -6,7 +6,7 @@ using System.Text;
 using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace CWLSLastSeenTool.Windows;
 
