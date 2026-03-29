@@ -383,9 +383,12 @@ public class ConfigWindow : Window, IDisposable
                     //if (string.Compare(characterData.NameString, "")){row["member"] = characterData.NameString;}
                     row["member"] = characterData.NameString; // + " " + characterData.HomeWorld;
                     if (string.Equals(row["member"], "")){row["member"] = "(Unable to Retrieve)";}
-                    row["state"] = characterData.State;
+                    row["state"] = "Offline";
+                    if (characterData.State > 0)
+                    {
+                        row["state"] = "Online";
+                    }
                     row["lastseen"] = dateToday;
-
                     if (characterData.State > 0)
                     {
                         row["seendays"] = 0;
@@ -394,7 +397,6 @@ public class ConfigWindow : Window, IDisposable
                     {
                         row["seendays"] = 40000;
                     }
-                    
                     row["linkshell"] = lsname;
                     row["cachedate"] = dateToday.ToString();
                     row["ispresent"] = 0;
