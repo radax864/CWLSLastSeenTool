@@ -1,28 +1,10 @@
 using System;
-using System.Collections;
-using System.ComponentModel.Design;
 using System.Data;
-using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Text;
-using Dalamud.Interface.Internal;
-using Dalamud.Interface.Utility;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using Dalamud.Bindings.ImGui;
-using Lumina.Excel;
 using Lumina.Excel.Sheets;
-using static System.Net.Mime.MediaTypeNames;
-using static FFXIVClientStructs.FFXIV.Client.UI.Info.InfoProxyCrossWorldLinkshell.Delegates;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using System.Collections.Generic;
-//using System.Collections.Generic;
 
 namespace CWLSLastSeenTool.Utils;
 
@@ -35,49 +17,10 @@ public class ShellTools : IDisposable
         Configuration = plugin.Configuration;
     }
 
-    public void Dispose() { }
-
-    // public string GetWorldId()
-    // {
-    //     string homeworld = "empty";
-    //     if (Plugin.PlayerState.HomeWorld.ToString() != null)
-    //     {
-    //         // homeworld = Plugin.PlayerState.HomeWorld.RowId.ToString();
-    //         homeworld = Plugin.PlayerState.HomeWorld.Value.DataCenter.Value.Name.ToString();
-    //         // homeworld = Plugin.PlayerState.HomeWorld.Value.;
-    //     }
-    //     return homeworld;
-    // }
-
-    // public string GetWorldName(string rawname)
-    // {
-    //     string[] splitname;
-    //     splitname = rawname.Split(new char[] { ' ' });
-    //     string newname = splitname[0] + " " + splitname[1];
-
-    //     if (Configuration.UseWorldNames == true)
-    //     {
-            
-    //         uint worldid = uint.Parse(splitname[2]);
-    //         string worldname = "World ID " + splitname[2] + " Not Found";
-
-    //         if (Plugin.DataManager.GetExcelSheet<World>().HasRow(worldid))
-    //         {
-    //             worldname = Plugin.DataManager.GetExcelSheet<World>().GetRow(worldid).Name.ToString();
-    //         }
-
-    //         newname += " (" + worldname + ")";
-
-    //         return newname;
-    //     }
-
-    //     else
-    //     {
-    //         newname += " (" + splitname[2] + ")";
-
-    //         return newname;
-    //     }
-    // }
+    public void Dispose()
+    {
+        //nothing to dispose currently
+    }
 
     private string WorldIdToName(ushort worldId)
     {
@@ -111,7 +54,7 @@ public class ShellTools : IDisposable
             return;
         }
 
-        //check if list index is out of array, if it is return to 0 before drawing list, neither of these run if index is within array
+        //check if list index is out of array, if it is bring it back within before drawing list, neither of these run if index is within array
         if (string.Equals(shellType, "CWLS") && Configuration.CWLSListIndex != 0 && Configuration.CWLSListIndex >= shellListLength)
         {
             Configuration.CWLSListIndex = shellListLength - 1;
@@ -122,258 +65,7 @@ public class ShellTools : IDisposable
             Configuration.LSListIndex = shellListLength - 1;
             Configuration.Save();
         }
-        // else
-        // {
-        //     Configuration.DEBUGString = "ClampShellListIndex Failed to clamp shell list.";
-        //     return;
-        // }
     }
-
-    // private void CacheCWLSMembers()
-    // {
-    //     //Fetch CWLS Data and Create Cache Table
-
-    //     DateTime dateToday = DateTime.Now;
-    //     string selectedcwlsname = "";
-    //     int cwlsloaded = 0;
-
-    //     DataTable cachetable = new DataTable();
-    //     cachetable.Columns.Add("member", typeof(string));
-    //     cachetable.Columns.Add("state", typeof(string));
-    //     cachetable.Columns.Add("lastseen", typeof(DateTime));
-    //     cachetable.Columns.Add("seendays", typeof(int));
-    //     cachetable.Columns.Add("cwls", typeof(string));
-    //     cachetable.Columns.Add("cachedate", typeof(string));
-    //     cachetable.Columns.Add("ispresent", typeof(int));
-
-    //     unsafe
-    //     {
-    //         if (InfoProxyCrossWorldLinkshellMember.Instance() != null && AgentCrossWorldLinkshell.Instance() != null && InfoProxyCrossWorldLinkshell.Instance() != null)
-    //         {
-    //             uint selectedcwlsindex = AgentCrossWorldLinkshell.Instance()->SelectedCWLSIndex;
-    //             selectedcwlsname = InfoProxyCrossWorldLinkshell.Instance()->GetCrossworldLinkshellName(selectedcwlsindex)->ToString();
-    //             //string selectedcwlsname = InfoProxyCrossWorldLinkshell.Instance()->GetCrossworldLinkshellName(selectedcwlsindex)->ToString();
-
-    //             foreach (var characterData in InfoProxyCrossWorldLinkshellMember.Instance()->CharDataSpan)
-    //             {
-    //                 DataRow row = cachetable.NewRow();
-    //                 row["member"] = characterData.NameString + " " + characterData.HomeWorld;
-    //                 row["state"] = characterData.State;
-    //                 row["lastseen"] = dateToday;
-
-    //                 if (characterData.State > 0)
-    //                 {
-    //                     row["seendays"] = 0;
-    //                 }
-    //                 else
-    //                 {
-    //                     row["seendays"] = 40000;
-    //                 }
-                    
-    //                 row["cwls"] = selectedcwlsname;
-    //                 row["cachedate"] = dateToday.ToString();
-    //                 row["ispresent"] = 0;
-
-    //                 cachetable.Rows.Add(row);
-    //             }
-    //             cwlsloaded = 1;
-    //         }
-    //     }
-
-    //     if (cwlsloaded == 1)
-    //     {
-    //         //Create Master Table
-    //         DataTable mastertable = new DataTable();
-    //         mastertable.Columns.Add("member", typeof(string));
-    //         mastertable.Columns.Add("state", typeof(string));
-    //         mastertable.Columns.Add("lastseen", typeof(DateTime));
-    //         mastertable.Columns.Add("seendays", typeof(int));
-    //         mastertable.Columns.Add("cwls", typeof(string));
-    //         mastertable.Columns.Add("cachedate", typeof(string));
-    //         mastertable.Columns.Add("ispresent", typeof(int));
-
-    //         string[] masterLines;
-    //         masterLines = Plugin.Configuration.CWLSCSVData.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-    //         string[] masterFields;
-    //         for (int i = 1; i < masterLines.GetLength(0); i++)
-    //         {
-    //             masterFields = masterLines[i].Split(new char[] { ',' });
-    //             DataRow Row = mastertable.NewRow();
-    //             Row["member"] = masterFields[0];
-    //             Row["state"] = masterFields[1];
-    //             Row["lastseen"] = masterFields[2];
-    //             Row["seendays"] = masterFields[3];
-    //             Row["cwls"] = masterFields[4];
-    //             Row["cachedate"] = masterFields[5];
-    //             Row["ispresent"] = masterFields[6];
-    //             mastertable.Rows.Add(Row);
-    //         }
-
-    //         //Do Compare and Update
-    //         foreach (DataRow cacheRow in cachetable.Rows)
-    //         {
-    //             string cacheMember = cacheRow.Field<string>("member");
-    //             string cacheState = cacheRow.Field<string>("state");
-    //             DateTime cacheLastseen = cacheRow.Field<DateTime>("lastseen");
-    //             int cacheSeendays = cacheRow.Field<int>("seendays");
-    //             string cacheCWLS = cacheRow.Field<string>("cwls");
-    //             string cacheCacheDate = cacheRow.Field<string>("cachedate");
-    //             int foundMember = 0;
-
-    //             foreach (DataRow masterRow in mastertable.Rows)
-    //             {
-    //                 string masterMember = masterRow.Field<string>("member");
-    //                 DateTime masterLastseen = masterRow.Field<DateTime>("lastseen");
-    //                 int masterSeendays = masterRow.Field<int>("seendays");
-    //                 string masterCWLS = masterRow.Field<string>("cwls");
-
-    //                 if (string.Equals(cacheCWLS, masterCWLS)) //should prevent members leaving cwls orphaning csv entry cachedates
-    //                 {
-    //                     if (string.Equals(cacheMember, masterMember))
-    //                     {
-    //                         foundMember++;
-    //                         if (string.Equals(cacheState, "Online"))
-    //                         {
-    //                             masterRow["lastseen"] = dateToday;
-    //                             masterRow["seendays"] = 0;
-    //                         }
-    //                         else if (masterSeendays != 40000)
-    //                         {
-    //                             masterRow["seendays"] = (dateToday.Date - masterLastseen.Date).Days; //Difference between date last seen online and today
-    //                         }
-    //                         masterRow["state"] = cacheState;
-    //                         //masterRow["cachedate"] = cacheCacheDate;
-    //                     }
-
-    //                     masterRow["cachedate"] = cacheCacheDate;
-    //                 }
-
-    //             }
-
-    //             if (foundMember == 0) //if member has not been found, will = 0, then write that member to master
-    //             {
-    //                 DataRow Row = mastertable.NewRow();
-    //                 Row["member"] = cacheMember;
-    //                 Row["state"] = cacheState;
-    //                 Row["lastseen"] = cacheLastseen;
-    //                 Row["seendays"] = cacheSeendays;
-    //                 Row["cwls"] = cacheCWLS;
-    //                 Row["cachedate"] = cacheCacheDate;
-    //                 Row["ispresent"] = 0;
-    //                 mastertable.Rows.Add(Row);
-    //             }
-    //         }
-
-    //         //compare master to cached to get presence
-    //         foreach (DataRow mRow in mastertable.Rows)
-    //         {
-    //             if (string.Equals(mRow["cwls"], selectedcwlsname))
-    //             {
-    //                 mRow["ispresent"] = 0;
-    //                 mRow["state"] = "Not Found";
-
-    //                 foreach (DataRow cRow in cachetable.Rows)
-    //                 {
-    //                     if (string.Equals(mRow["member"], cRow["member"]))
-    //                     {
-    //                         mRow["ispresent"] = 1;
-    //                         mRow["state"] = cRow["state"];
-    //                     }
-    //                 }
-    //             }
-    //         }
-
-    //         //Write Back Updated Master Table CSV
-    //         StringBuilder sb0 = new StringBuilder();
-    //         string[] columnNames0 = mastertable.Columns.Cast<DataColumn>().Select(column => column.ColumnName).ToArray();
-    //         sb0.AppendLine(string.Join(",", columnNames0));
-
-    //         foreach (DataRow row in mastertable.Rows)
-    //         {
-    //             string[] fields = row.ItemArray.Select(field => field.ToString()).ToArray();
-    //             sb0.AppendLine(string.Join(",", fields));
-    //         }
-
-    //         //make CSV list of known cwls names
-    //         StringBuilder sb2 = new StringBuilder();
-    //         string[] cwlslist = mastertable.Rows.Cast<DataRow>().Select(r => r.Field<string>("cwls")).Distinct().ToArray();
-    //         sb2.AppendLine(string.Join(",", cwlslist));
-
-    //         //make CSV list of cwls cache dates
-    //         StringBuilder sb4 = new StringBuilder();
-    //         string[] cwlslistdates = mastertable.Rows.Cast<DataRow>().Select(r => r.Field<string>("cachedate")).Distinct().ToArray();
-    //         sb4.AppendLine(string.Join(",", cwlslistdates));
-
-    //         Plugin.Configuration.CWLSCSVData = sb0.ToString();
-    //         Plugin.Configuration.CWLSCSVList = sb2.ToString().Remove(sb2.ToString().Length - 2);
-    //         Plugin.Configuration.CWLSCSVListDate = sb4.ToString().Remove(sb4.ToString().Length - 2);
-    //         Configuration.Save();
-    //     }
-    // }
-
-    // private void RemoveCWLSMember(string remcwls, string remname)
-    // {
-    //     //this works by rebuilding the main csv while excluding the selected member
-    //     DataTable remtable = new DataTable();
-    //     remtable.Columns.Add("member", typeof(string));
-    //     remtable.Columns.Add("state", typeof(string));
-    //     remtable.Columns.Add("lastseen", typeof(DateTime));
-    //     remtable.Columns.Add("seendays", typeof(int));
-    //     remtable.Columns.Add("cwls", typeof(string));
-    //     remtable.Columns.Add("cachedate", typeof(string));
-    //     remtable.Columns.Add("ispresent", typeof(int));
-
-    //     string[] remLines;
-    //     remLines = Plugin.Configuration.CWLSCSVData.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-    //     string[] remFields;
-
-    //     for (int i = 1; i < remLines.GetLength(0); i++)
-    //     {
-    //         remFields = remLines[i].Split(new char[] { ',' });
-    //         if (remFields[4].Equals(remcwls) && remFields[0].Equals(remname))
-    //         {
-    //             //throw the name you want to remove into the void
-    //         }
-    //         else
-    //         {
-    //             DataRow Row = remtable.NewRow();
-    //             Row["member"] = remFields[0];
-    //             Row["state"] = remFields[1];
-    //             Row["lastseen"] = remFields[2];
-    //             Row["seendays"] = remFields[3];
-    //             Row["cwls"] = remFields[4];
-    //             Row["cachedate"] = remFields[5];
-    //             Row["ispresent"] = remFields[6];
-    //             remtable.Rows.Add(Row);
-    //         }
-    //     }
-
-    //     StringBuilder sb1 = new StringBuilder();
-    //     string[] columnNames0 = remtable.Columns.Cast<DataColumn>().Select(column => column.ColumnName).ToArray();
-    //     sb1.AppendLine(string.Join(",", columnNames0));
-
-    //     foreach (DataRow row in remtable.Rows)
-    //     {
-    //         string[] fields = row.ItemArray.Select(field => field.ToString()).ToArray();
-    //         sb1.AppendLine(string.Join(",", fields));
-    //     }
-
-    //     //update CSV list of known cwls names
-    //     StringBuilder sb2 = new StringBuilder();
-    //     string[] cwlslist = remtable.Rows.Cast<DataRow>().Select(r => r.Field<string>("cwls")).Distinct().ToArray(); //this removes the \r\n from the end of the string
-    //     sb2.AppendLine(string.Join(",", cwlslist));
-
-    //     //update CSV list of cwls cache dates
-    //     StringBuilder sb4 = new StringBuilder();
-    //     string[] cwlslistdates = remtable.Rows.Cast<DataRow>().Select(r => r.Field<string>("cachedate")).Distinct().ToArray(); //this removes the \r\n from the end of the string
-    //     sb4.AppendLine(string.Join(",", cwlslistdates));
-
-    //     Plugin.Configuration.CWLSCSVData = sb1.ToString();
-    //     Plugin.Configuration.CWLSCSVList = sb2.ToString().Remove(sb2.ToString().Length - 2);
-    //     Plugin.Configuration.CWLSCSVListDate = sb4.ToString().Remove(sb4.ToString().Length - 2);
-    //     Configuration.Save();
-    // }
-
 
     public void CacheShell(string shellType, string cacheType = "Normal") //shellType CWLS and LS, cacheType Normal and Merge
     {
@@ -413,8 +105,6 @@ public class ShellTools : IDisposable
         DataTable cacheTable = new DataTable();
         cacheTable.Columns.Add("member", typeof(string));
         cacheTable.Columns.Add("homeworld", typeof(string));
-        // cacheTable.Columns.Add("shellname", typeof(string));
-        // cacheTable.Columns.Add("shelldc", typeof(string));
         cacheTable.Columns.Add("state", typeof(string));
         cacheTable.Columns.Add("listname", typeof(string));
 
@@ -435,8 +125,6 @@ public class ShellTools : IDisposable
                         row["member"] = "(Unable to Retrieve)";
                     }
                     row["homeworld"] = WorldIdToName(characterData.HomeWorld);
-                    // row["shellname"] = shellName;
-                    // row["shelldc"] = shellDc;
                     row["state"] = "Offline";
                     if (characterData.State > 0)
                     {
@@ -462,8 +150,6 @@ public class ShellTools : IDisposable
                         row["member"] = "(Unable to Retrieve)";
                     }
                     row["homeworld"] = WorldIdToName(characterData.HomeWorld);
-                    // row["shellname"] = shellName;
-                    // row["shelldc"] = shellDc;
                     row["state"] = "Offline";
                     if (characterData.State > 0)
                     {
@@ -484,8 +170,6 @@ public class ShellTools : IDisposable
         DataTable masterTable = new DataTable();
         masterTable.Columns.Add("member", typeof(string));
         masterTable.Columns.Add("homeworld", typeof(string));
-        // masterTable.Columns.Add("shellname", typeof(string));
-        // masterTable.Columns.Add("shelldc", typeof(string));
         masterTable.Columns.Add("state", typeof(string));
         masterTable.Columns.Add("lastseen", typeof(DateTime));
         masterTable.Columns.Add("seendays", typeof(int));
@@ -507,6 +191,7 @@ public class ShellTools : IDisposable
             Configuration.DEBUGString = "Failed to create masterTable.";
             return;
         }
+
         string[] masterFields;
         for (int i = 1; i < masterLines.GetLength(0); i++)
         {
@@ -519,16 +204,6 @@ public class ShellTools : IDisposable
             DataRow Row = masterTable.NewRow();
             Row["member"] = masterFields[0];
             Row["homeworld"] = masterFields[1];
-            // if (string.Equals(cacheType, "Merge") && string.Equals(masterFields[7], mergeListName))
-            // {
-            //     Row["shellname"] = shellName;
-            //     Row["shelldc"] = shellDc;
-            // }
-            // else
-            // {
-            //     Row["shellname"] = masterFields[2];
-            //     Row["shelldc"] = masterFields[3];
-            // }
             Row["state"] = masterFields[2];
             Row["lastseen"] = masterFields[3];
             Row["seendays"] = masterFields[4];
@@ -565,10 +240,8 @@ public class ShellTools : IDisposable
                         }
                         masterRow["state"] = cacheRow.Field<string>("state");
                     }
-
                     masterRow["cachedate"] = cacheDate;
                 }
-
             }
 
             if (foundMember == 0) //if member has not been found, will = 0, then write that member to master
@@ -576,8 +249,6 @@ public class ShellTools : IDisposable
                 DataRow Row = masterTable.NewRow();
                 Row["member"] = cacheRow.Field<string>("member");
                 Row["homeworld"] = cacheRow.Field<string>("homeworld");
-                // Row["shellname"] = cacheRow.Field<string>("shellname");
-                // Row["shelldc"] = cacheRow.Field<string>("shelldc");
                 Row["state"] = cacheRow.Field<string>("state");
                 Row["lastseen"] = cacheDate;
                 Row["seendays"] = 40000;
@@ -678,8 +349,6 @@ public class ShellTools : IDisposable
         DataTable removeTable = new DataTable();
         removeTable.Columns.Add("member", typeof(string));
         removeTable.Columns.Add("homeworld", typeof(string));
-        // removeTable.Columns.Add("shellname", typeof(string));
-        // removeTable.Columns.Add("shelldc", typeof(string));
         removeTable.Columns.Add("state", typeof(string));
         removeTable.Columns.Add("lastseen", typeof(DateTime));
         removeTable.Columns.Add("seendays", typeof(int));
@@ -688,11 +357,11 @@ public class ShellTools : IDisposable
         removeTable.Columns.Add("ispresent", typeof(int));
 
         string[] removeLines;
-        if (string.Equals(shellType, "CWLS") && Configuration.CSVDataVersion == Configuration.CWLSCSVDataVersion) //|| (string.Equals(shellType, "CWLS") && string.Equals(Configuration.CWLSCSVData, "")))
+        if (string.Equals(shellType, "CWLS") && Configuration.CSVDataVersion == Configuration.CWLSCSVDataVersion)
         {
             removeLines = Configuration.CWLSCSVData.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
         }
-        else if (string.Equals(shellType, "LS") && Configuration.CSVDataVersion == Configuration.LSCSVDataVersion) //|| (string.Equals(shellType, "LS") && string.Equals(Configuration.LSCSVData, "")))
+        else if (string.Equals(shellType, "LS") && Configuration.CSVDataVersion == Configuration.LSCSVDataVersion)
         {
             removeLines = Configuration.LSCSVData.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
         }
@@ -720,8 +389,6 @@ public class ShellTools : IDisposable
                 DataRow Row = removeTable.NewRow();
                 Row["member"] = removeFields[0];
                 Row["homeworld"] = removeFields[1];
-                // Row["shellname"] = removeFields[2];
-                // Row["shelldc"] = removeFields[3];
                 Row["state"] = removeFields[2];
                 Row["lastseen"] = removeFields[3];
                 Row["seendays"] = removeFields[4];
@@ -815,7 +482,6 @@ public class ShellTools : IDisposable
             Row["cachedate"] = updateFields[5];
             Row["ispresent"] = updateFields[6];
             updateTable.Rows.Add(Row);
-            
         }
 
         //Build Updated Master Table CSV - make column headers
@@ -876,7 +542,6 @@ public class ShellTools : IDisposable
             Row["cachedate"] = updateFields[5];
             Row["ispresent"] = updateFields[6];
             updateTable.Rows.Add(Row);
-            
         }
 
         //Build Updated Master Table CSV - make column headers

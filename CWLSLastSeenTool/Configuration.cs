@@ -1,5 +1,4 @@
 using Dalamud.Configuration;
-using Dalamud.Plugin;
 using System;
 
 namespace CWLSLastSeenTool;
@@ -18,16 +17,14 @@ public class Configuration : IPluginConfiguration
     public int DEBUGInt3 { get; set; } = 0;
 
     //CSV Data Layout Version
-    public int CSVDataVersion { get; set; } = 0;
+    public int CSVDataVersion { get; set; } = 0; //version number for csv/tsv column layout, set/update this at plugin init in plugin.cs constructor
 
     //CWLS Data Storage
     public int CWLSCSVDataVersion { get; set; } = 0;
-    public string CWLSCSVData { get; set; } = ""; //new storage for 7 column table with cwls name and date and presence
+    public string CWLSCSVData { get; set; } = "";
     public string CWLSCSVList { get; set; } = ""; //create list of known cwls when caching members
     public string CWLSCSVListDate { get; set; } = ""; //list of cache dates corresponding to CWLSCSVList
     public int CWLSListIndex { get; set; } = 0; //used for drop down cwls list memory
-    // public int CWLSMemberCount { get; set; } = 0; //used for showing current member count for actively showing list
-    // public int CWLSOnlineCount { get; set; } = 0; //used for showing current online member count for actively showing list
 
     //CWLS Backup Storage - Simple internal backup copy, should replace with something more robust
     public int CWLSCSVDataVersionBACKUP { get; set; } = 0;
@@ -37,12 +34,10 @@ public class Configuration : IPluginConfiguration
 
     //LS Storage
     public int LSCSVDataVersion { get; set; } = 0;
-    public string LSCSVData { get; set; } = ""; //new storage for 7 column table with cwls name and date and presence
-    public string LSCSVList { get; set; } = ""; //create list of known cwls when caching members
-    public string LSCSVListDate { get; set; } = ""; //list of cache dates corresponding to CWLSCSVList
-    public int LSListIndex { get; set; } = 0; //used for drop down cwls list memory
-    // public int LSMemberCount { get; set; } = 0; //used for showing current member count for actively showing list
-    // public int LSOnlineCount { get; set; } = 0; //used for showing current online member count for actively showing list
+    public string LSCSVData { get; set; } = "";
+    public string LSCSVList { get; set; } = ""; //create list of known ls when caching members
+    public string LSCSVListDate { get; set; } = ""; //list of cache dates corresponding to LSCSVList
+    public int LSListIndex { get; set; } = 0; //used for drop down ls list memory
 
     //LS Backup Storage - Simple internal backup copy, should replace with something more robust
     public int LSCSVDataVersionBACKUP { get; set; } = 0;
