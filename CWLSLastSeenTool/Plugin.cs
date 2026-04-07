@@ -5,6 +5,7 @@ using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using CWLSLastSeenTool.Windows;
+using CWLSLastSeenTool.Utils;
 
 namespace CWLSLastSeenTool;
 
@@ -13,8 +14,9 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
+    [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
 
-    private const string CommandName = "/cwlslst";
+    private const string CommandName = "/shelltools";
 
     public Configuration Configuration { get; init; }
 
@@ -32,9 +34,14 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
 
+        Configuration.CSVDataVersion = 1; //1 = member,homeworld,state,lastseen,seendays,listname,cachedate,ispresent
+        Configuration.EnableDEBUGInfo = false;
+        Configuration.DEBUGString = "";
+        Configuration.Save();
+
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
-            HelpMessage = "Check when CWLS members were last on"
+            HelpMessage = "Open the Linkshell Tools window"
         });
 
         PluginInterface.UiBuilder.Draw += DrawUI;
