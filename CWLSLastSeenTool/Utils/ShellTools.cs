@@ -10,16 +10,72 @@ namespace CWLSLastSeenTool.Utils;
 
 public class ShellTools : IDisposable
 {
+    private Plugin Plugin;
     private Configuration Configuration;
 
     public ShellTools(Plugin plugin)
     {
+        Plugin = plugin;
         Configuration = plugin.Configuration;
     }
 
     public void Dispose()
     {
         //nothing to dispose currently
+    }
+
+    public void RefreshDisplayData(string shellType)
+    {
+        if (string.Equals(shellType, "CWLS") && Configuration.CWLSCSVDataVersion == Configuration.CSVDataVersion && !Configuration.CWLSCSVList.Equals("") && !Configuration.CWLSCSVListDate.Equals("") && !Configuration.CWLSCSVData.Equals(""))
+        {
+            //make list of cwls names for drop down
+            Plugin.listNamesCWLS = Configuration.CWLSCSVList.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+            //make list of cache dates to display next to cwls list drop down
+            Plugin.listDatesCWLS = Configuration.CWLSCSVListDate.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+            //make data rows for display table
+            Plugin.tableDataCWLS = Configuration.CWLSCSVData.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+            //set data ready to 1, ready to display
+            Plugin.dataReadyCWLS = 1;
+            Plugin.sortSpecsDirtyCWLS = true;
+        }
+        else if (string.Equals(shellType, "CWLS") && Configuration.CWLSCSVDataVersion == 0 && !Configuration.CWLSCSVList.Equals("") && !Configuration.CWLSCSVListDate.Equals("") && !Configuration.CWLSCSVData.Equals(""))
+        {
+            //set data ready to 2, update data
+            Plugin.dataReadyCWLS = 2;
+        }
+        else if (string.Equals(shellType, "CWLS"))
+        {
+            //if all shells have been removed
+            Plugin.dataReadyCWLS = 0;
+        }
+        else if (string.Equals(shellType, "LS") && Configuration.LSCSVDataVersion == Configuration.CSVDataVersion && !Configuration.LSCSVList.Equals("") && !Configuration.LSCSVListDate.Equals("") && !Configuration.LSCSVData.Equals(""))
+        {
+            //make list of cwls names for drop down
+            Plugin.listNamesLS = Configuration.LSCSVList.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+            //make list of cache dates to display next to cwls list drop down
+            Plugin.listDatesLS = Configuration.LSCSVListDate.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+            //make data rows for display table
+            Plugin.tableDataLS = Configuration.LSCSVData.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+            //set data ready to 1, ready to display
+            Plugin.dataReadyLS = 1;
+            Plugin.sortSpecsDirtyLS = true;
+        }
+        else if (string.Equals(shellType, "LS") && Configuration.LSCSVDataVersion == 0 && !Configuration.LSCSVList.Equals("") && !Configuration.LSCSVListDate.Equals("") && !Configuration.LSCSVData.Equals(""))
+        {
+            //set data ready to 2, update data
+            Plugin.dataReadyLS = 2;
+        }
+        else if (string.Equals(shellType, "LS"))
+        {
+            //if all shells have been removed
+            Plugin.dataReadyLS = 0;
+        }
     }
 
     private string WorldIdToName(ushort worldId)
@@ -67,7 +123,7 @@ public class ShellTools : IDisposable
         }
     }
 
-    public void CacheShell(string shellType, string cacheType = "Normal") //shellType CWLS and LS, cacheType Normal and Merge
+    public void CacheShell(string shellType, string cacheType = "Normal", int mergeIndex = 0) //shellType CWLS and LS, cacheType Normal and Merge
     {
         //initial sanity check
         Configuration.DEBUGString = "";
@@ -89,12 +145,12 @@ public class ShellTools : IDisposable
         if (string.Equals(cacheType, "Merge") && string.Equals(shellType, "CWLS") && !Configuration.CWLSCSVList.Equals(""))
         {
             string[] mergeList = Configuration.CWLSCSVList.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            mergeListName = mergeList[Configuration.CWLSListIndex];
+            mergeListName = mergeList[mergeIndex];
         }
         else if (string.Equals(cacheType, "Merge") && string.Equals(shellType, "LS") && !Configuration.LSCSVList.Equals(""))
         {
             string[] mergeList = Configuration.LSCSVList.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            mergeListName = mergeList[Configuration.LSListIndex];
+            mergeListName = mergeList[mergeIndex];
         }
         else if (string.Equals(cacheType, "Merge"))
         {
@@ -313,6 +369,7 @@ public class ShellTools : IDisposable
             Configuration.DEBUGString = "Cross-world Linkshell info written successfully.";
             Configuration.Save();
             ClampShellListIndex("CWLS");
+            RefreshDisplayData("CWLS");
         }
         else if (string.Equals(shellType, "LS"))
         {
@@ -323,6 +380,7 @@ public class ShellTools : IDisposable
             Configuration.DEBUGString = "Linkshell info written successfully.";
             Configuration.Save();
             ClampShellListIndex("LS");
+            RefreshDisplayData("LS");
         }
         else
         {
@@ -430,6 +488,7 @@ public class ShellTools : IDisposable
             Configuration.DEBUGString = "Cross-world Linkshell info removed successfully.";
             Configuration.Save();
             ClampShellListIndex("CWLS");
+            RefreshDisplayData("CWLS");
         }
         else if (string.Equals(shellType, "LS"))
         {
@@ -440,6 +499,7 @@ public class ShellTools : IDisposable
             Configuration.DEBUGString = "Linkshell info removed successfully.";
             Configuration.Save();
             ClampShellListIndex("LS");
+            RefreshDisplayData("LS");
         }
         else
         {
@@ -511,6 +571,7 @@ public class ShellTools : IDisposable
         Configuration.CWLSCSVListDate = sb4.ToString().Remove(sb4.ToString().Length - 2);
         Configuration.Save();
         ClampShellListIndex("CWLS");
+        RefreshDisplayData("CWLS");
     }
 
     public void TEMPUpdateLSData() //temp method to update data from csv version 0 to 1
@@ -571,6 +632,7 @@ public class ShellTools : IDisposable
         Configuration.LSCSVListDate = sb4.ToString().Remove(sb4.ToString().Length - 2);
         Configuration.Save();
         ClampShellListIndex("LS");
+        RefreshDisplayData("LS");
     }
 
 }

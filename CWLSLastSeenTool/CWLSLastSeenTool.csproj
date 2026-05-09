@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
   <PropertyGroup>
-    <Version>2.0.1.0</Version>
+    <Version>2.0.2.0</Version>
     <Description>Tools to make managing Linkshells and Cross-world Linkshells easier.</Description>
     <PackageProjectUrl>https://github.com/radax864/CWLSLastSeenTool</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
