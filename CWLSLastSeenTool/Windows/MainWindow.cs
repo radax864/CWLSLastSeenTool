@@ -4,6 +4,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
 using CWLSLastSeenTool.Utils;
+using Dalamud.Interface;
 
 namespace CWLSLastSeenTool.Windows;
 
@@ -14,6 +15,11 @@ public class MainWindow : Window, IDisposable
     private ShellTools ShellTools;
     private int memberCount = 0;
     private int onlineCount = 0;
+
+    //font colours
+    private Vector4 vectRed = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+    private Vector4 vectGreen = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+    private Vector4 vectGray = new Vector4(0.501f, 0.501f, 0.501f, 1.0f);
 
     public MainWindow(Plugin plugin)
         : base("Linkshell Tools") //, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
@@ -40,27 +46,19 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.Spacing();
 
-        //check for empty strings that will cause things to break
-        if (Configuration.CWLSCSVDataVersion == Configuration.CSVDataVersion && !Configuration.CWLSCSVList.Equals("") && !Configuration.CWLSCSVListDate.Equals("") && !Configuration.CWLSCSVData.Equals(""))
+        //check for empty strings that will cause things to break moved to RefreshDisplayData method
+        if (Plugin.dataReadyCWLS == 1)
         {
-            //make list of cwls names for drop down
-            string[] CWLSList;
-            CWLSList = Configuration.CWLSCSVList.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-
-            //make list of cache dates to display next to cwls list drop down
-            string[] CWLSListDate;
-            CWLSListDate = Configuration.CWLSCSVListDate.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-
             ImGui.SetNextItemWidth(300.0f);
 
-            using (var cwlspicklist = ImRaii.Combo("##cwls_picklist", CWLSList[Configuration.CWLSListIndex]))
+            using (var cwlspicklist = ImRaii.Combo("##cwls_picklist", Plugin.listNamesCWLS[Configuration.CWLSListIndex]))
             {
                 if (cwlspicklist)
                 {
-                    for (int i = 0; i < CWLSList.Length; i++)
+                    for (int i = 0; i < Plugin.listNamesCWLS.Length; i++)
                     {
                         bool isselected = Configuration.CWLSListIndex == i;
-                        if (ImGui.Selectable(CWLSList[i], isselected))
+                        if (ImGui.Selectable(Plugin.listNamesCWLS[i], isselected))
                         {
                             Configuration.CWLSListIndex = i;
                             Configuration.Save();
@@ -85,17 +83,9 @@ public class MainWindow : Window, IDisposable
             ImGui.Spacing();
 
             ImGui.SameLine();
-            ImGui.Text($"Last Cached: {CWLSListDate[Configuration.CWLSListIndex]}");
+            ImGui.Text($"Last Cached: {Plugin.listDatesCWLS[Configuration.CWLSListIndex]}");
 
             ImGui.Spacing();
-
-            //start making the display table
-            string[] Lines;
-            Lines = Configuration.CWLSCSVData.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            string[] Fields;
-
-            Vector4 vectRed = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-            Vector4 vectGreen = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
 
             ImGuiTableFlags flags = ImGuiTableFlags.ScrollY | ImGuiTableFlags.RowBg | ImGuiTableFlags.Sortable;
 
@@ -113,59 +103,64 @@ public class MainWindow : Window, IDisposable
 
                     ImGuiTableSortSpecsPtr sortSpecs = ImGui.TableGetSortSpecs();
 
-                    Array.Sort(Lines, (line1, line2) =>
+                    if (sortSpecs.SpecsDirty || Plugin.sortSpecsDirtyCWLS)
                     {
-                        // Don't sort Lines[0] - it's the table headers
-                        if (line1 == Lines[0]) return -1;
-                        if (line2 == Lines[0]) return 1;
-
-                        string[] fields1 = line1.Split(new char[] { '\t' });
-                        string[] fields2 = line2.Split(new char[] { '\t' });
-
-                        short index = sortSpecs.Specs.ColumnIndex; // this is the column that we're sorting by
-                        int comparison = 0;
-
-                        switch (index)
+                        Array.Sort(Plugin.tableDataCWLS, (line1, line2) =>
                         {
-                            case 0: // Names
-                                comparison = string.Compare(fields1[0], fields2[0]);
-                                break;
-                            case 1: // Online/Offline
-                                comparison = string.Compare(fields1[2], fields2[2]);
-                                break;
-                            case 2: // Last Seen Date
-                                var time1 = DateTime.Parse(fields1[3]);
-                                var time2 = DateTime.Parse(fields2[3]);
-                                comparison = time1.CompareTo(time2);
-                                break;
-                            case 3: // days since seen
-                                comparison = int.Parse(fields1[4]) - int.Parse(fields2[4]);
-                                break;
-                        }
+                            // Don't sort Lines[0] - it's the table headers
+                            if (line1 == Plugin.tableDataCWLS[0]) return -1;
+                            if (line2 == Plugin.tableDataCWLS[0]) return 1;
 
-                        if (comparison == 0 && index != 0)
-                        {
-                            // If the lines have the same value in this column, sort by name as a second layer.
-                            // Always sort ascending for the secondary name sort
-                            return string.Compare(fields1[0], fields2[0]);
-                        }
+                            string[] fields1 = line1.Split(new char[] { '\t' });
+                            string[] fields2 = line2.Split(new char[] { '\t' });
 
-                        if (comparison != 0)
-                        {
-                            // Check sort direction here and return the inverse if descending
-                            return sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending ? -comparison : comparison;
-                        }
-                        return 0;
-                    });
+                            short index = sortSpecs.Specs.ColumnIndex; // this is the column that we're sorting by
+                            int comparison = 0;
+
+                            switch (index)
+                            {
+                                case 0: // Names
+                                    comparison = string.Compare(fields1[0], fields2[0]);
+                                    break;
+                                case 1: // Online/Offline
+                                    comparison = string.Compare(fields1[2], fields2[2]);
+                                    break;
+                                case 2: // Last Seen Date
+                                    var time1 = DateTime.Parse(fields1[3]);
+                                    var time2 = DateTime.Parse(fields2[3]);
+                                    comparison = time1.CompareTo(time2);
+                                    break;
+                                case 3: // days since seen
+                                    comparison = int.Parse(fields1[4]) - int.Parse(fields2[4]);
+                                    break;
+                            }
+
+                            if (comparison == 0 && index != 0)
+                            {
+                                // If the lines have the same value in this column, sort by name as a second layer.
+                                // Always sort ascending for the secondary name sort
+                                return string.Compare(fields1[0], fields2[0]);
+                            }
+
+                            if (comparison != 0)
+                            {
+                                // Check sort direction here and return the inverse if descending
+                                return sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending ? -comparison : comparison;
+                            }
+                            return 0;
+                        });
+                        sortSpecs.SpecsDirty = false;
+                        Plugin.sortSpecsDirtyCWLS = false;
+                    }
 
                     memberCount = 0;
                     onlineCount = 0;
 
-                    for (int i = 1; i < Lines.GetLength(0); i++)
+                    for (int i = 1; i < Plugin.tableDataCWLS.GetLength(0); i++)
                     {
-                        Fields = Lines[i].Split(new char[] { '\t' }); //0 = member, 1 = homeworld, 2 = state, 3 = lastseen, 4 = seendays, 5 = listname, 6 = cachedate, 7 = ispresent
+                        string[] Fields = Plugin.tableDataCWLS[i].Split(new char[] { '\t' }); //0 = member, 1 = homeworld, 2 = state, 3 = lastseen, 4 = seendays, 5 = listname, 6 = cachedate, 7 = ispresent
 
-                        if (Fields[5].Equals(CWLSList[Configuration.CWLSListIndex]))
+                        if (Fields[5].Equals(Plugin.listNamesCWLS[Configuration.CWLSListIndex]))
                         {
                             ImGui.TableNextRow();
                             ImGui.TableNextColumn();
@@ -189,11 +184,18 @@ public class MainWindow : Window, IDisposable
                                 ImGui.TextColored(vectRed, $"{Fields[2]}");
                             }
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{Fields[3].Substring(0, 10)}"); //lastseen
+                            if (int.Parse(Fields[4]) == 40000) //lastseen
+                            {
+                                ImGui.TextColored(vectGray, "Never Seen");
+                            }
+                            else
+                            {
+                                ImGui.Text($"{Fields[3].Substring(0, 10)}");
+                            }
                             ImGui.TableNextColumn();
                             if (int.Parse(Fields[4]) == 40000) //seendays
                             {
-                                ImGui.Text("Never Seen");
+                                ImGui.TextColored(vectGray, $"Cached {Fields[3].Substring(0, 10)}");
                             }
                             else
                             {
@@ -209,7 +211,7 @@ public class MainWindow : Window, IDisposable
                 }
             }
         }
-        else if (Configuration.CWLSCSVDataVersion == 0 && !Configuration.CWLSCSVList.Equals("") && !Configuration.CWLSCSVListDate.Equals("") && !Configuration.CWLSCSVData.Equals(""))
+        else if (Plugin.dataReadyCWLS == 2)
         {
             ImGui.Spacing();
 
@@ -240,25 +242,19 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.Spacing();
 
-        //check for empty strings that will cause things to break
-        if (Configuration.LSCSVDataVersion == Configuration.CSVDataVersion && !Configuration.LSCSVList.Equals("") && !Configuration.LSCSVListDate.Equals("") && !Configuration.LSCSVData.Equals(""))
+        //check for empty strings that will cause things to break moved to RefreshDisplayData method
+        if (Plugin.dataReadyLS == 1)
         {
-            //make list of ls names for drop down
-            string[] LSList = Configuration.LSCSVList.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-
-            //make list of cache dates to display next to cwls list drop down
-            string[] LSListDate = Configuration.LSCSVListDate.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-
             ImGui.SetNextItemWidth(300.0f);
 
-            using (var lspicklist = ImRaii.Combo("##ls_picklist", LSList[Configuration.LSListIndex]))
+            using (var lspicklist = ImRaii.Combo("##ls_picklist", Plugin.listNamesLS[Configuration.LSListIndex]))
             {
                 if (lspicklist)
                 {
-                    for (int i = 0; i < LSList.Length; i++)
+                    for (int i = 0; i < Plugin.listNamesLS.Length; i++)
                     {
                         bool isselected = Configuration.LSListIndex == i;
-                        if (ImGui.Selectable(LSList[i], isselected))
+                        if (ImGui.Selectable(Plugin.listNamesLS[i], isselected))
                         {
                             Configuration.LSListIndex = i;
                             Configuration.Save();
@@ -283,17 +279,9 @@ public class MainWindow : Window, IDisposable
             ImGui.Spacing();
 
             ImGui.SameLine();
-            ImGui.Text($"Last Cached: {LSListDate[Configuration.LSListIndex]}");
+            ImGui.Text($"Last Cached: {Plugin.listDatesLS[Configuration.LSListIndex]}");
 
             ImGui.Spacing();
-
-            //start making the display table
-            string[] Lines;
-            Lines = Configuration.LSCSVData.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            string[] Fields;
-
-            Vector4 vectRed = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-            Vector4 vectGreen = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
 
             ImGuiTableFlags flags = ImGuiTableFlags.ScrollY | ImGuiTableFlags.RowBg | ImGuiTableFlags.Sortable;
 
@@ -311,59 +299,65 @@ public class MainWindow : Window, IDisposable
 
                     ImGuiTableSortSpecsPtr sortSpecs = ImGui.TableGetSortSpecs();
 
-                    Array.Sort(Lines, (line1, line2) =>
+                    if (sortSpecs.SpecsDirty || Plugin.sortSpecsDirtyLS)
                     {
-                        // Don't sort Lines[0] - it's the table headers
-                        if (line1 == Lines[0]) return -1;
-                        if (line2 == Lines[0]) return 1;
-
-                        string[] fields1 = line1.Split(new char[] { '\t' });
-                        string[] fields2 = line2.Split(new char[] { '\t' });
-
-                        short index = sortSpecs.Specs.ColumnIndex; // this is the column that we're sorting by
-                        int comparison = 0;
-
-                        switch (index)
+                        Array.Sort(Plugin.tableDataLS, (line1, line2) =>
                         {
-                            case 0: // Names
-                                comparison = string.Compare(fields1[0], fields2[0]);
-                                break;
-                            case 1: // Online/Offline
-                                comparison = string.Compare(fields1[2], fields2[2]);
-                                break;
-                            case 2: // Last Seen Date
-                                var time1 = DateTime.Parse(fields1[3]);
-                                var time2 = DateTime.Parse(fields2[3]);
-                                comparison = time1.CompareTo(time2);
-                                break;
-                            case 3: // days since seen
-                                comparison = int.Parse(fields1[4]) - int.Parse(fields2[4]);
-                                break;
-                        }
+                            // Don't sort Lines[0] - it's the table headers
+                            if (line1 == Plugin.tableDataLS[0]) return -1;
+                            if (line2 == Plugin.tableDataLS[0]) return 1;
 
-                        if (comparison == 0 && index != 0)
-                        {
-                            // If the lines have the same value in this column, sort by name as a second layer.
-                            // Always sort ascending for the secondary name sort
-                            return string.Compare(fields1[0], fields2[0]);
-                        }
+                            string[] fields1 = line1.Split(new char[] { '\t' });
+                            string[] fields2 = line2.Split(new char[] { '\t' });
 
-                        if (comparison != 0)
-                        {
-                            // Check sort direction here and return the inverse if descending
-                            return sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending ? -comparison : comparison;
-                        }
-                        return 0;
-                    });
+                            short index = sortSpecs.Specs.ColumnIndex; // this is the column that we're sorting by
+                            int comparison = 0;
+
+                            switch (index)
+                            {
+                                case 0: // Names
+                                    comparison = string.Compare(fields1[0], fields2[0]);
+                                    break;
+                                case 1: // Online/Offline
+                                    comparison = string.Compare(fields1[2], fields2[2]);
+                                    break;
+                                case 2: // Last Seen Date
+                                    var time1 = DateTime.Parse(fields1[3]);
+                                    var time2 = DateTime.Parse(fields2[3]);
+                                    comparison = time1.CompareTo(time2);
+                                    break;
+                                case 3: // days since seen
+                                    comparison = int.Parse(fields1[4]) - int.Parse(fields2[4]);
+                                    break;
+                            }
+
+                            if (comparison == 0 && index != 0)
+                            {
+                                // If the lines have the same value in this column, sort by name as a second layer.
+                                // Always sort ascending for the secondary name sort
+                                return string.Compare(fields1[0], fields2[0]);
+                            }
+
+                            if (comparison != 0)
+                            {
+                                // Check sort direction here and return the inverse if descending
+                                return sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending ? -comparison : comparison;
+                            }
+                            return 0;
+                        });
+                        sortSpecs.SpecsDirty = false;
+                        Plugin.sortSpecsDirtyLS = false;
+
+                    }
 
                     memberCount = 0;
                     onlineCount = 0;
 
-                    for (int i = 1; i < Lines.GetLength(0); i++)
+                    for (int i = 1; i < Plugin.tableDataLS.GetLength(0); i++)
                     {
-                        Fields = Lines[i].Split(new char[] { '\t' }); //0 = member, 1 = homeworld, 2 = state, 3 = lastseen, 4 = seendays, 5 = listname, 6 = cachedate, 7 = ispresent
+                        string[] Fields = Plugin.tableDataLS[i].Split(new char[] { '\t' }); //0 = member, 1 = homeworld, 2 = state, 3 = lastseen, 4 = seendays, 5 = listname, 6 = cachedate, 7 = ispresent
 
-                        if (Fields[5].Equals(LSList[Configuration.LSListIndex]))
+                        if (Fields[5].Equals(Plugin.listNamesLS[Configuration.LSListIndex]))
                         {
                             ImGui.TableNextRow();
                             ImGui.TableNextColumn();
@@ -387,11 +381,18 @@ public class MainWindow : Window, IDisposable
                                 ImGui.TextColored(vectRed, $"{Fields[2]}");
                             }
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{Fields[3].Substring(0, 10)}"); //lastseen
+                            if (int.Parse(Fields[4]) == 40000) //lastseen
+                            {
+                                ImGui.TextColored(vectGray, "Never Seen");
+                            }
+                            else
+                            {
+                                ImGui.Text($"{Fields[3].Substring(0, 10)}");
+                            }
                             ImGui.TableNextColumn();
                             if (int.Parse(Fields[4]) == 40000) //seendays
                             {
-                                ImGui.Text("Never Seen");
+                                ImGui.TextColored(vectGray, $"Cached {Fields[3].Substring(0, 10)}");
                             }
                             else
                             {
@@ -407,7 +408,7 @@ public class MainWindow : Window, IDisposable
                 }
             }
         }
-        else if (Configuration.LSCSVDataVersion == 0 && !Configuration.LSCSVList.Equals("") && !Configuration.LSCSVListDate.Equals("") && !Configuration.LSCSVData.Equals(""))
+        else if (Plugin.dataReadyLS == 2)
         {
             ImGui.Spacing();
 
@@ -427,17 +428,18 @@ public class MainWindow : Window, IDisposable
 
             ImGui.TextWrapped("No Linkshell Data. Please open up a Linkshell and click the Cache Linkshell Members button in this window.");
 
-            if (Plugin.PlayerState.CurrentWorld.Value.DataCenter.Value.Name.ToString() != null)
-            {
-                ImGui.Text($"{Plugin.PlayerState.CurrentWorld.Value.DataCenter.Value.Name.ToString()}");
-            }
-
             if (ImGui.Button("Cache Members"))
             {
                 ShellTools.CacheShell("LS");
             }
 
         }
+    }
+
+    public override void OnOpen()
+    {
+        ShellTools.RefreshDisplayData("CWLS");
+        ShellTools.RefreshDisplayData("LS");
     }
 
     public override void Draw()

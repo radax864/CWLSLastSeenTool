@@ -9,8 +9,11 @@ namespace CWLSLastSeenTool.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
+    private Plugin Plugin;
     private Configuration Configuration;
     private ShellTools ShellTools;
+    private int listIndexCWLS = 0;
+    private int listIndexLS = 0;
 
     public ConfigWindow(Plugin plugin) : base("Linkshell Tools Advanced Options")
     {
@@ -24,6 +27,7 @@ public class ConfigWindow : Window, IDisposable
             MaximumSize = new Vector2(480, float.MaxValue)
         };
 
+        Plugin = plugin;
         Configuration = plugin.Configuration;
         ShellTools = new ShellTools(plugin);
     }
@@ -46,28 +50,55 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Separator();
         ImGui.Spacing();
 
-        string activeCWLSList = "No CWLS Have Been Cached";
-        if (!Configuration.CWLSCSVList.Equals(""))
+        if (Plugin.dataReadyCWLS == 1)
         {
-            string[] CWLSList;
-            CWLSList = Configuration.CWLSCSVList.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            activeCWLSList = CWLSList[Configuration.CWLSListIndex];
-        }
-        ImGui.Text($"Selected CWLS List: {activeCWLSList}");
-        ImGui.Spacing();
+            ImGui.SetNextItemWidth(200.0f);
 
-        if (ImGui.Button("Remove Selected CWLS List") && ImGui.GetIO().KeyCtrl)
-        {
-            ShellTools.RemoveShell("Shell", "CWLS", activeCWLSList);
-        }
-        ImGui.TextWrapped("Removes all entries from the current list.");
-        ImGui.Spacing();
+            using (var cwlspicklist = ImRaii.Combo("##cwls_picklist", Plugin.listNamesCWLS[listIndexCWLS]))
+            {
+                if (cwlspicklist)
+                {
+                    for (int i = 0; i < Plugin.listNamesCWLS.Length; i++)
+                    {
+                        bool isselected = listIndexCWLS == i;
+                        if (ImGui.Selectable(Plugin.listNamesCWLS[i], isselected))
+                        {
+                            listIndexCWLS = i;
+                        }
+                        if (isselected)
+                        {
+                            ImGui.SetItemDefaultFocus();
+                        }
+                    }
+                }
+            }
 
-        if (ImGui.Button("Merge/Update CWLS List") && ImGui.GetIO().KeyCtrl)
-        {
-            ShellTools.CacheShell("CWLS", "Merge");
+            ImGui.SameLine();
+            if (ImGui.Button("Remove List") && ImGui.GetIO().KeyCtrl)
+            {
+                ShellTools.RemoveShell("Shell", "CWLS", Plugin.listNamesCWLS[listIndexCWLS]);
+                listIndexCWLS = 0;
+            }
+            ImGui.SameLine();
+
+            if (ImGui.Button("Merge/Update List") && ImGui.GetIO().KeyCtrl)
+            {
+                ShellTools.CacheShell("CWLS", "Merge", listIndexCWLS);
+                listIndexCWLS = 0;
+            }
+            
+            ImGui.Spacing();
+            ImGui.TextWrapped("Remove List: Removes all entries from the selected list.");
+            ImGui.Spacing();
+            ImGui.TextWrapped("Merge/Update List: Updates the name of the selected CWLS list and caches its members against the currently opened Cross-world Linkshell. This will fail if the Cross-world Linkshell has already been cached/exists in the CWLS list.");
+            ImGui.Spacing();
         }
-        ImGui.TextWrapped("Updates the name of the active CWLS list and caches its members against the currently selected Cross-world Linkshell. This will fail if the Cross-world Linkshell has already been cached/exists in the CWLS list.");
+        else
+        {
+            ImGui.TextWrapped("No CWLS Have Been Cached");
+            listIndexCWLS = 0;
+            listIndexLS = 0;
+        }
 
         ImGui.Spacing();
         ImGui.Spacing();
@@ -86,6 +117,7 @@ public class ConfigWindow : Window, IDisposable
             Configuration.CWLSCSVList = "";
             Configuration.CWLSCSVListDate = "";
             Configuration.Save();
+            ShellTools.RefreshDisplayData("CWLS");
         }
 
         ImGui.Spacing();
@@ -98,6 +130,7 @@ public class ConfigWindow : Window, IDisposable
             Configuration.CWLSCSVListDate = Configuration.CWLSCSVListDateBACKUP;
             Configuration.Save();
             ShellTools.ClampShellListIndex("CWLS");
+            ShellTools.RefreshDisplayData("CWLS");
         }
 
         ImGui.Spacing();
@@ -141,28 +174,55 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Separator();
         ImGui.Spacing();
 
-        string activeLSList = "No Linkshells Have Been Cached";
-        if (!Configuration.LSCSVList.Equals(""))
+        if (Plugin.dataReadyLS == 1)
         {
-            string[] LSList;
-            LSList = Configuration.LSCSVList.Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            activeLSList = LSList[Configuration.LSListIndex];
-        }
-        ImGui.Text($"Selected Linkshell List: {activeLSList}");
-        ImGui.Spacing();
+            ImGui.SetNextItemWidth(200.0f);
 
-        if (ImGui.Button("Remove Selected Linkshell List") && ImGui.GetIO().KeyCtrl)
-        {
-            ShellTools.RemoveShell("Shell", "LS", activeLSList);
-        }
-        ImGui.TextWrapped("Removes all entries from the current list.");
-        ImGui.Spacing();
+            using (var lspicklist = ImRaii.Combo("##ls_picklist", Plugin.listNamesLS[listIndexLS]))
+            {
+                if (lspicklist)
+                {
+                    for (int i = 0; i < Plugin.listNamesLS.Length; i++)
+                    {
+                        bool isselected = listIndexLS == i;
+                        if (ImGui.Selectable(Plugin.listNamesLS[i], isselected))
+                        {
+                            listIndexLS = i;
+                        }
+                        if (isselected)
+                        {
+                            ImGui.SetItemDefaultFocus();
+                        }
+                    }
+                }
+            }
 
-        if (ImGui.Button("Merge/Update Linkshell List") && ImGui.GetIO().KeyCtrl)
-        {
-            ShellTools.CacheShell("LS", "Merge");
+            ImGui.SameLine();
+            if (ImGui.Button("Remove List") && ImGui.GetIO().KeyCtrl)
+            {
+                ShellTools.RemoveShell("Shell", "LS", Plugin.listNamesLS[listIndexLS]);
+                listIndexLS = 0;
+            }
+            ImGui.SameLine();
+
+            if (ImGui.Button("Merge/Update List") && ImGui.GetIO().KeyCtrl)
+            {
+                ShellTools.CacheShell("LS", "Merge", listIndexLS);
+                listIndexLS = 0;
+            }
+            
+            ImGui.Spacing();
+            ImGui.TextWrapped("Remove List: Removes all entries from the selected list.");
+            ImGui.Spacing();
+            ImGui.TextWrapped("Merge/Update List: Updates the name of the selected list and caches its members against the currently opened Linkshell. This will fail if the Linkshell has already been cached/exists in the Linkshell list.");
+            ImGui.Spacing();
         }
-        ImGui.TextWrapped("Updates the name of the active Linkshell list and caches its members against the currently selected Linkshell. This will fail if the Linkshell has already been cached/exists in the Linkshell list.");
+        else
+        {
+            ImGui.TextWrapped("No Linkshells Have Been Cached");
+            listIndexCWLS = 0;
+            listIndexLS = 0;
+        }
 
         ImGui.Spacing();
         ImGui.Spacing();
@@ -181,6 +241,7 @@ public class ConfigWindow : Window, IDisposable
             Configuration.LSCSVList = "";
             Configuration.LSCSVListDate = "";
             Configuration.Save();
+            ShellTools.RefreshDisplayData("LS");
         }
 
         ImGui.Spacing();
@@ -193,6 +254,7 @@ public class ConfigWindow : Window, IDisposable
             Configuration.LSCSVListDate = Configuration.LSCSVListDateBACKUP;
             Configuration.Save();
             ShellTools.ClampShellListIndex("LS");
+            ShellTools.RefreshDisplayData("LS");
         }
 
         ImGui.Spacing();
@@ -272,6 +334,12 @@ public class ConfigWindow : Window, IDisposable
            Configuration.DEBUGInt3 = 0;
            Configuration.Save();
         }
+    }
+
+    public override void OnOpen()
+    {
+        listIndexCWLS = 0;
+        listIndexLS = 0;
     }
 
     public override void Draw()

@@ -22,6 +22,18 @@ public sealed class Plugin : IDalamudPlugin
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
 
+    //new variables to store table data
+    public string[] listNamesCWLS = [""];
+    public string[] listDatesCWLS = [""];
+    public string[] tableDataCWLS = [""];
+    public int dataReadyCWLS = 0;
+    public bool sortSpecsDirtyCWLS = false;
+    public string[] listNamesLS = [""];
+    public string[] listDatesLS = [""];
+    public string[] tableDataLS = [""];
+    public int dataReadyLS = 0;
+    public bool sortSpecsDirtyLS = false;
+
     public Plugin()
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
